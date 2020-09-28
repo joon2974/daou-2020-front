@@ -14,6 +14,7 @@ const routerOptions = [
   { path: "/", component: "HomeView" },
   { path: "/signin", component: "SignInView" },
   { path: "/signup", component: "NotFound" },
+  { path: "/board", component: "BoardView"},
   { path: "/mypage", component: "MyPageView", beforeEnter: requiresAuth() },
   { path: "*", component: "NotFound" },
 ];

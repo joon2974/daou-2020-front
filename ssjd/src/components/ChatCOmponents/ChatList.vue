@@ -3,14 +3,14 @@
     <v-list-item>
       <!-- userId_left -->
       <v-list-item-action>
-        <label>{{ nickName }} : </label>
+        <label>{{ message.nickName }} : </label>
       </v-list-item-action>
 
       <!-- msg content -->
       <v-list-item-content>
         <v-textarea
-          :value="content"
-          label="userId"
+          :value="message.content"
+          label="message.userId"
           readonly
           dense
           rows="1"
@@ -18,7 +18,7 @@
           auto-grow
           hide-details
         >
-          <template v-slot:label>{{ userId }}</template>
+          <template v-slot:label>{{ message.userId }}</template>
         </v-textarea>
 
         <!-- send date -->
@@ -33,18 +33,20 @@
 <script>
 export default {
   props: {
-    msgId: Number,
-    userId: Number,
-    nickName: String,
-    postId: Number,
-    content: String,
-    createdDate: Date,
+    message: {
+      msgId: Number,
+      userId: Number,
+      nickName: String,
+      postId: Number,
+      content: String,
+      createdDate: Date,
+    },
   },
 
   computed: {
     convertedDate: function() {
-      var hour = "" + this.createdDate.getHours(),
-        min = "" + this.createdDate.getMinutes();
+      var hour = "" + this.message.createdDate.getHours(),
+        min = "" + this.message.createdDate.getMinutes();
       // month = "" + (this.createdDate.getMonth() + 1),
       // day = "" + this.createdDate.getDate(),
 

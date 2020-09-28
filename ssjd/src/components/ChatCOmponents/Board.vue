@@ -7,7 +7,7 @@
             <td>사이트</td>
             <td>
               <v-combobox
-                v-model="select"
+                v-model="board.select"
                 :items="items"
                 label="PlatForm"
                 readonly
@@ -16,26 +16,26 @@
           </tr>
           <tr>
             <td>언어</td>
-            <td>{{ language }}</td>
+            <td>{{ board.language }}</td>
           </tr>
           <tr>
             <td>제목</td>
-            <td>{{ title }}</td>
+            <td>{{ board.title }}</td>
           </tr>
           <tr>
             <td>문제</td>
-            <td>{{ probId }} - {{ problem }}</td>
+            <td>{{ board.probId }} - {{ board.problem }}</td>
           </tr>
           <tr>
             <td>글쓴이</td>
-            <td>{{ userId }}</td>
+            <td>{{ board.userId }}</td>
           </tr>
           <tr>
             <td>풀이</td>
             <td>
               <v-textarea
                 class="my-3"
-                :value="content"
+                :value="board.content"
                 dense
                 rows="1"
                 readonly
@@ -55,14 +55,16 @@
 <script>
 export default {
   props: {
-    postId: Number,
-    userId: Number,
-    probId: Number,
-    problem: String,
-    language: String,
-    title: String,
-    content: String,
-    select: String,
+    board: {
+      postId: Number,
+      userId: Number,
+      probId: Number,
+      problem: String,
+      language: String,
+      title: String,
+      content: String,
+      select: String,
+    },
   },
 
   components: {},

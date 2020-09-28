@@ -6,26 +6,23 @@
           <v-col cols="12" sm="4">
             <v-flex>
               <v-card>
-                <board
-                  :postId="boardInfo.postId"
-                  :userId="boardInfo.userId"
-                  :probId="boardInfo.probId"
-                  :problem="boardInfo.problem"
-                  :language="boardInfo.language"
-                  :title="boardInfo.title"
-                  :content="boardInfo.content"
-                  :select="boardInfo.select"
-                ></board>
+                <v-card-text>
+                  <v-label>게시글 보기</v-label>
+                  <board :board="boardInfo"></board>
+                </v-card-text>
               </v-card>
             </v-flex>
           </v-col>
           <v-col cols="12" sm="4">
             <v-flex>
               <v-card>
-                <codeView
-                  :codeOverall="codeInfo.content"
-                  :select="codeInfo.select"
-                ></codeView>
+                <v-card-text>
+                  <v-label>코드 보기</v-label>
+                  <codeView
+                    :codeOverall="codeInfo.content"
+                    :select="codeInfo.select"
+                  ></codeView>
+                </v-card-text>
               </v-card>
             </v-flex>
           </v-col>
@@ -39,12 +36,7 @@
                     <message-list
                       v-for="msg in messages"
                       :key="msg.msgId"
-                      :msgId="msg.msgId"
-                      :userId="msg.userId"
-                      :postId="msg.postId"
-                      :nickName="msg.nickName"
-                      :content="msg.content"
-                      :createdDate="new Date()"
+                      :message="msg"
                     >
                     </message-list>
                   </v-list>
@@ -67,7 +59,7 @@
 import Board from "../components/ChatComponents/Board";
 import CodeView from "../components/ChatComponents/Code";
 import SendChat from "../components/ChatComponents/SendChat";
-import Chat from "../components/ChatComponents/Chat";
+import Chat from "../components/ChatComponents/ChatList";
 
 export default {
   components: {
@@ -92,7 +84,7 @@ export default {
           postId: 1,
           nickName: "닉1",
           content: "Test 제발 돼라",
-          createDate: new Date(),
+          createdDate: new Date(),
         },
         {
           msgId: 2,
@@ -100,7 +92,7 @@ export default {
           postId: 1,
           nickName: "닉2",
           content: "ㅎㅇㄹ",
-          createDate: new Date(),
+          createdDate: new Date(),
         },
         {
           msgId: 3,
@@ -108,7 +100,7 @@ export default {
           postId: 1,
           nickName: "닉3",
           content: "공부해라",
-          createDate: new Date(),
+          createdDate: new Date(),
         },
       ],
       boardInfo: {

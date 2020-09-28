@@ -1,46 +1,47 @@
 <template>
   <v-form>
-    <v-label>~ 게시글 조회 ~</v-label>
     <v-simple-table>
       <template slot="default">
         <tbody>
           <tr>
-            <td>PlatForm</td>
+            <td>사이트</td>
             <td>
               <v-combobox
                 v-model="select"
                 :items="items"
                 label="PlatForm"
+                readonly
               ></v-combobox>
             </td>
           </tr>
           <tr>
-            <td>Language</td>
-            <td>Java</td>
+            <td>언어</td>
+            <td>{{ language }}</td>
           </tr>
           <tr>
-            <td>Title</td>
-            <td>Comparator, CompareTo 사용한 풀이[JAVA]</td>
+            <td>제목</td>
+            <td>{{ title }}</td>
           </tr>
           <tr>
-            <td>Problem No.</td>
-            <td>2263</td>
+            <td>문제</td>
+            <td>{{ probId }} - {{ problem }}</td>
           </tr>
           <tr>
-            <td>Writer</td>
-            <td>user1</td>
+            <td>글쓴이</td>
+            <td>{{ userId }}</td>
           </tr>
           <tr>
-            <td>Content</td>
+            <td>풀이</td>
             <td>
               <v-textarea
-                class="mt-3"
+                class="my-3"
+                :value="content"
                 dense
                 rows="1"
                 readonly
                 auto-grow
                 outlined
-                value="입력으로 주어지는 어쩌고저쩌고"
+                hide-details
               >
               </v-textarea>
             </td>
@@ -57,21 +58,18 @@ export default {
     postId: Number,
     userId: Number,
     probId: Number,
-    problem: Number,
+    problem: String,
     language: String,
     title: String,
     content: String,
-
-    platForm,
-    probNum,
-    writer,
+    select: String,
   },
 
   components: {},
 
   data() {
     return {
-      select: "",
+      // select: "",
       items: ["BOJ", "Prog", "etc"],
     };
   },

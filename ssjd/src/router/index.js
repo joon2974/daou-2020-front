@@ -16,6 +16,7 @@ const routerOptions = [
   { path: "/signup", component: "NotFound" },
   { path: "/mypage", component: "MyPageView", beforeEnter: requiresAuth() },
   { path: "*", component: "NotFound" },
+  { path: "/chat", component: "ChatView" },
 ];
 
 const routes = routerOptions.map((route) => {

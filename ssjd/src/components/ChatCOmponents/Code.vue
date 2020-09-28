@@ -6,17 +6,20 @@
           v-model="select"
           :items="items"
           label="Language"
+          class="pl-2"
+          readonly
         ></v-combobox>
       </v-col>
     </v-row>
     <v-row>
       <v-col cols="12">
         <v-textarea
-          label="Code Example"
+          label="Code"
           :value="codeOverall"
           readonly
           outlined
           auto-grow
+          hide-details
         >
         </v-textarea>
       </v-col>
@@ -28,13 +31,14 @@
 export default {
   props: {
     codeOverall: String,
+    select: String,
   },
 
   components: {},
 
   data() {
     return {
-      select: "",
+      // select: "",
       items: ["Java", "C++", "Python", "Javascript"],
     };
   },

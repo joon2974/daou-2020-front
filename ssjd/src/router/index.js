@@ -3,11 +3,18 @@ import VueRouter from "vue-router";
 
 Vue.use(VueRouter);
 
+// 인증한 필요한 페이지의 인증을 처리
+const requiresAuth = () => (from, to, next) => {
+  const isAuthenticated = false;
+  if (isAuthenticated) return next();
+  next("/signin?returnPath=mypage");
+};
+
 const routerOptions = [
   { path: "/", component: "HomeView" },
   { path: "/signin", component: "SignInView" },
   { path: "/signup", component: "NotFound" },
-  { path: "/mypage", component: "MyPageView", meta: { requiresAuth: true } },
+  { path: "/mypage", component: "MyPageView", beforeEnter: requiresAuth() },
   { path: "*", component: "NotFound" },
 ];
 

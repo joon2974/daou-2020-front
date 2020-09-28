@@ -1,20 +1,13 @@
 <template>
-<div>
-    <h1>{{this.nickname}}</h1>
-    <h1>{{this.title}}</h1>
-    <h1>{{this.platform}}</h1>
-    <h1>{{this.problemTitle}}</h1>
-    </div>
+<v-card>
+    <h2>nickname : {{post.user.nickname}}</h2>
+    <h4>Title : {{post.title}}</h4>
+    <h4>Site : {{post.problem.problemLink}}</h4>
+    <h4>Problem : {{post.problem.problemTitle}}</h4>
+    </v-card>
 </template>
 <script>
 export default {
-    data() {
-        return {
-            nickname: "사용자명",
-            title: "글 제목",
-            platform: "프로그래머스",
-            problemTitle: "H-Index"
-        }
-    }
+    props: ['post'],
 };
 </script>

@@ -79,7 +79,10 @@ export default {
       const password = crypto
         .createHash("sha256")
         .update(this.password)
-        .digest("base64");
+        .digest("base64")
+        .replace("=", "");
+
+      console.log(`아이디: ${nickname}, 패스워드: ${password}`);
 
       axios
         .post(`${resourceHost}/users`, { nickname, password }, headers)
@@ -87,7 +90,6 @@ export default {
           (this.id = ""), (this.password = "");
           this.vrfPassword = "";
           this.changeTab();
-          alert("가입 완료되었습니다!");
         })
         .catch((e) => {
           if (e.response.request.status === 500) {

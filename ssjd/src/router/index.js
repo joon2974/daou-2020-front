@@ -6,6 +6,7 @@ Vue.use(VueRouter);
 // 인증한 필요한 페이지의 인증을 처리
 const requiresAuth = () => (from, to, next) => {
   const isAuthenticated = false;
+  // 로컬 혹은 세션 스토리지에서 토큰 받아와서 있으면 next() 실행하도록 수정하기
   if (isAuthenticated) return next();
   next("/signin?returnPath=mypage");
 };
@@ -14,10 +15,9 @@ const routerOptions = [
   { path: "/", component: "HomeView" },
   { path: "/signin", component: "SignInView" },
   { path: "/signup", component: "NotFound" },
-  { path: "/board", component: "BoardView"},
+  { path: "/board", component: "BoardView" },
   { path: "/mypage", component: "MyPageView", beforeEnter: requiresAuth() },
   { path: "*", component: "NotFound" },
-  { path: "/chat", component: "BoardDetailView" },
 ];
 
 const routes = routerOptions.map((route) => {

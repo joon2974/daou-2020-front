@@ -14,10 +14,11 @@
 </template>
 
 <script>
+import axios from "axios";
+const path = "http://localhost:3000/api";
+
 export default {
-  props: {
-    message: String,
-  },
+  props: ["message", "user"],
 
   computed: {
     disabled() {
@@ -27,7 +28,11 @@ export default {
 
   methods: {
     sendMsg() {
-      alert(this.message);
+      const postId = 1,
+        msg = this.message,
+        user = this.user;
+      axios.post(`${path}/chat/${postId}`, { user, msg }).then(() => {});
+      this.message = "";
     },
   },
 };

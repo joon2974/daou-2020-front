@@ -5,37 +5,40 @@
         <tbody>
           <tr>
             <td>사이트</td>
-            <td>
+            <td>{{ post.problem.problemType }}</td>
+            <!-- <td>
               <v-combobox
-                v-model="board.select"
+                :v-model="post.problem.problemType"
                 :items="items"
                 label="PlatForm"
                 readonly
               ></v-combobox>
-            </td>
+            </td> -->
           </tr>
           <tr>
             <td>언어</td>
-            <td>{{ board.language }}</td>
+            <td>{{ post.language }}</td>
           </tr>
           <tr>
             <td>제목</td>
-            <td>{{ board.title }}</td>
+            <td>{{ post.title }}</td>
           </tr>
           <tr>
             <td>문제</td>
-            <td>{{ board.probId }} - {{ board.problem }}</td>
+            <td>
+              {{ post.problem.problemId }} - {{ post.problem.problemTitle }}
+            </td>
           </tr>
           <tr>
             <td>글쓴이</td>
-            <td>{{ board.userId }}</td>
+            <td>{{ post.user.userId }}</td>
           </tr>
           <tr>
             <td>풀이</td>
             <td>
               <v-textarea
                 class="my-3"
-                :value="board.content"
+                :value="post.content"
                 dense
                 rows="1"
                 readonly
@@ -54,25 +57,13 @@
 
 <script>
 export default {
-  props: {
-    board: {
-      postId: Number,
-      userId: Number,
-      probId: Number,
-      problem: String,
-      language: String,
-      title: String,
-      content: String,
-      select: String,
-    },
-  },
+  props: ["post"],
 
   components: {},
 
   data() {
     return {
-      // select: "",
-      items: ["BOJ", "Prog", "etc"],
+      items: ["백준", "Prog", "etc"],
     };
   },
 };

@@ -76,7 +76,7 @@ export default {
         {
           icon: "mdi-clipboard-text-outline",
           title: "게시판",
-          to: "/board",
+          to: "/",
         },
         {
           icon: "mdi-briefcase-outline",
@@ -86,7 +86,7 @@ export default {
         {
           icon: "mdi-chat",
           title: "프로그래머스",
-          to: "/NotFound",
+          to: "/board",
         },
       ],
       miniVariant: false,
@@ -107,7 +107,6 @@ export default {
       else this.$router.push("/signin");
     },
     logout() {
-      alert("로그아웃!");
       this.$store.dispatch("LOGOUT").then(() => this.$router.push("/"));
     },
   },

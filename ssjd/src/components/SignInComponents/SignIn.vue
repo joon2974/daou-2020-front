@@ -53,18 +53,19 @@ export default {
   },
   methods: {
     logIn() {
-      const pwd = crypto
+      const password = crypto
         .createHash("sha256")
         .update(this.password)
-        .digest("base64");
-      const nickName = this.id;
-
-      alert("로그인 버튼");
+        .digest("base64")
+        .replace("=", "");
+      const nickname = this.id;
 
       this.$store
-        .dispatch("LOGIN", { nickName, pwd })
+        .dispatch("LOGIN", { nickname, password })
         .then(() => this.redirect())
-        .catch(({ message }) => alert(`${message}`));
+        .catch(() => {
+          alert("아이디 혹은 비밀번호가 일치하지 않습니다!");
+        });
     },
     redirect() {
       const { search } = window.location;

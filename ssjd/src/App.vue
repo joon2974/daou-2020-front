@@ -76,7 +76,7 @@ export default {
         {
           icon: "mdi-clipboard-text-outline",
           title: "게시판",
-          to: "/",
+          to: "/board",
         },
         {
           icon: "mdi-briefcase-outline",

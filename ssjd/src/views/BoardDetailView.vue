@@ -1,14 +1,14 @@
 <template>
   <v-content>
     <v-container fluid>
-      <v-layout align-center justify-center>
+      <v-layout align-center justify-center class="overflow-y-auto">
         <v-row>
           <v-col cols="12" sm="4">
             <v-flex>
               <v-card>
                 <v-card-text>
                   <v-label>게시글 보기</v-label>
-                  <board :board="boardInfo"></board>
+                  <board :post="boardInfo"></board>
                 </v-card-text>
               </v-card>
             </v-flex>
@@ -19,8 +19,8 @@
                 <v-card-text>
                   <v-label>코드 보기</v-label>
                   <codeView
-                    :codeOverall="codeInfo.content"
-                    :select="codeInfo.select"
+                    :codeOverall="boardInfo.code"
+                    :select="boardInfo.language"
                   ></codeView>
                 </v-card-text>
               </v-card>
@@ -45,7 +45,7 @@
                 <v-divider></v-divider>
 
                 <!-- enter message -->
-                <my-chat class="pa-5"></my-chat>
+                <my-chat class="pa-5" :user="boardInfo.user"></my-chat>
               </v-card>
             </v-flex>
           </v-col>
@@ -60,6 +60,14 @@ import Board from "../components/ChatComponents/Board";
 import CodeView from "../components/ChatComponents/Code";
 import SendChat from "../components/ChatComponents/SendChat";
 import Chat from "../components/ChatComponents/ChatList";
+import axios from "axios";
+
+const path = "http://localhost:3000/api";
+const headers = {
+  "Content-type": "application/json; charset=UTF-8",
+  Accept: "*/*",
+  "Access-Control-Allow-Origin": "*",
+};
 
 export default {
   components: {
@@ -69,14 +77,21 @@ export default {
     "message-list": Chat,
   },
 
+  created() {
+    const postId = this.postId;
+    axios.get(`${path}/posts/${postId}`, headers).then((res) => {
+      this.boardInfo = res.data;
+      console.log(this.boardInfo.user);
+    });
+  },
+
   data() {
     return {
-      codeInfo: {
-        content:
-          'public class Solution{\n\tpublic static void main(String[] args){\n\t\tSystem.out.println("코드 리뷰 좀");\n\t}\n}',
-        select: "Java",
-      },
+      postId: 1,
 
+      boardInfo: {},
+
+      //tmp
       messages: [
         {
           msgId: 1,
@@ -103,16 +118,6 @@ export default {
           createdDate: new Date(),
         },
       ],
-      boardInfo: {
-        postId: 1,
-        userId: 10000,
-        probId: 2263,
-        problem: "트리의 순회",
-        language: "Java",
-        title: "Comparator, CompareTo 사용한 풀이[JAVA]",
-        content: "입력으로 주어지는 어쩌고저쩌고",
-        select: "BOJ",
-      },
     };
   },
 };

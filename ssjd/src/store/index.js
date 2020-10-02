@@ -13,6 +13,8 @@ const headers = {
   "Access-Control-Allow-Origin": "*",
 };
 
+const storage = window.sessionStorage;
+
 export default new Vuex.Store({
   state: {
     userId: "",
@@ -24,9 +26,12 @@ export default new Vuex.Store({
       state.accessToken = user.auth_token;
       state.userId = user.data.userId;
       state.nickName = user.data.nickname;
+
+      storage.setItem("accessToken", user.auth_token);
     },
     LOGOUT(state) {
       state.accessToken = null;
+      storage.removeItem("accessToken");
     },
   },
   actions: {
@@ -43,6 +48,7 @@ export default new Vuex.Store({
         });
     },
     LOGOUT({ commit }) {
+      axios.defaults.headers.common["Authorization"] = undefined;
       commit("LOGOUT");
     },
   },

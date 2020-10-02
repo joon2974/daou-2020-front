@@ -5,8 +5,10 @@ Vue.use(VueRouter);
 
 // 인증한 필요한 페이지의 인증을 처리
 const requiresAuth = () => (from, to, next) => {
-  const isAuthenticated = false;
-  // 로컬 혹은 세션 스토리지에서 토큰 받아와서 있으면 next() 실행하도록 수정하기
+  console.log(`토큰: ${window.sessionStorage.getItem("accessToken")}`);
+  const token = window.sessionStorage.getItem("accessToken");
+  const isAuthenticated = token === null ? false : true;
+  // 세션 스토리지에서 토큰 받아와서 있으면 next() 실행하도록 수정하기
   if (isAuthenticated) return next();
   next("/signin?returnPath=mypage");
 };

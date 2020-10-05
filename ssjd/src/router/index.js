@@ -17,6 +17,7 @@ const routerOptions = [
   { path: "/signup", component: "NotFound" },
   { path: "/board", component: "BoardView" },
   { path: "/mypage", component: "MyPageView", beforeEnter: requiresAuth() },
+  { path: "/chat/:postId", component: "BoardDetailView" },
   { path: "*", component: "NotFound" },
 ];
 

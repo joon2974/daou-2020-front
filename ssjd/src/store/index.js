@@ -30,7 +30,14 @@ export default new Vuex.Store({
     },
     LOGOUT(state) {
       state.accessToken = null;
+      state.userId = "";
+      state.nickName = "";
       delete localStorage.accessToken;
+    },
+    UPDATEUSER(state, user) {
+      state.userId = user.data.userId;
+      state.nickName = user.data.nickname;
+      state.accessToken = user.auth_token;
     },
   },
   actions: {
@@ -48,6 +55,17 @@ export default new Vuex.Store({
     LOGOUT({ commit }) {
       axios.defaults.headers.common["Authorization"] = undefined;
       commit("LOGOUT");
+    },
+    UPDATEUSER({ commit }, { nickname, newNickname }) {
+      return axios
+        .put(
+          `${resourceHost}/users/nickname`,
+          { nickname, newNickname },
+          headers
+        )
+        .then((data) => {
+          commit("UPDATEUSER", data.data);
+        });
     },
   },
   modules: {},

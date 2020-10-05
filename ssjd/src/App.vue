@@ -62,6 +62,7 @@
 
 <script>
 import { mapState } from "vuex";
+import axios from "axios";
 // import jwt from "jsonwebtoken";
 // import { jwtSalt } from "../secretStrings";
 
@@ -119,8 +120,9 @@ export default {
       //   console.log(e);
       // }
       this.isAuthenticated = token === undefined ? false : true;
-      if (this.isAuthenticated) this.$router.push("/");
-      else this.$router.push("/signin");
+      if (this.isAuthenticated) {
+        axios.defaults.headers.common["Authorization"] = `${this.accessToken}`;
+      } else this.$router.push("/signin");
     },
     logout() {
       this.$store.dispatch("LOGOUT").then(() => {
@@ -141,7 +143,7 @@ export default {
     this.isAuthenticated = token === undefined ? false : true;
   },
   computed: {
-    ...mapState(["userId", "nickName"]),
+    ...mapState(["userId", "nickName", "accessToken"]),
     parallaxHeight() {
       switch (this.$vuetify.breakpoint.name) {
         case "xs":

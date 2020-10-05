@@ -55,21 +55,31 @@
         <div class="d-flex flex-column">
           <v-dialog v-model="nicknameDialog" persistent max-width="290">
             <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                class="mt-5"
-                outlined
-                rounded
-                v-bind="attrs"
-                v-on="on"
-                @click="changeNickname"
-              >
+              <v-btn class="mt-5" outlined rounded v-bind="attrs" v-on="on">
                 CHANGE NICKNAME
               </v-btn>
             </template>
             <v-card>
               <v-card-title class="headline"> Change Nickname </v-card-title>
-              <v-card-text>닉네임 변경</v-card-text>
               <v-card-actions>
+                <v-text-field
+                  autofocus
+                  v-model="newNickname"
+                  :counter="20"
+                  label="새 닉네임"
+                  required
+                  ref="newNickname"
+                ></v-text-field>
+              </v-card-actions>
+              <v-card-actions>
+                <v-btn
+                  color="green darken-1"
+                  text
+                  @click="changeNickname"
+                  class="d-flex flex-row"
+                >
+                  닉네임 변경
+                </v-btn>
                 <v-btn
                   color="green darken-1"
                   text
@@ -112,7 +122,12 @@
                     label="비밀번호 확인"
                     required
                   ></v-text-field>
-                  <v-btn :disabled="!valid" class="mr-4" type="submit"
+                  <v-btn
+                    :disabled="!valid"
+                    class="mr-4"
+                    type="submit"
+                    color="green darken-1"
+                    text
                     >비밀번호 변경</v-btn
                   >
                 </v-form>
@@ -137,13 +152,25 @@
 
 <script>
 import AWS from "aws-sdk";
+import axios from "axios";
+import crypto from "crypto";
+import { s3Config } from "../../../secretStrings";
 
 export default {
+  created() {
+    this.setS3Varialbes();
+  },
   data() {
     return {
       title: this.$store.state.nickName,
       subtitle: "내가 푼 문제 갯수",
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+        Accept: "*/*",
+        "Access-Control-Allow-Origin": "*",
+      },
       dialog: false,
+      newNickname: "",
       nicknameDialog: false,
       passwordDialog: false,
       file: null,
@@ -151,9 +178,10 @@ export default {
       vrfPassword: "",
       valid: false,
       disabled: false,
-      albumBucketName: "profile-storage-alyeodaou",
-      bucketRegion: "ap-northeast-2",
-      IdentityPoolId: "ap-northeast-2:6a91df99-a971-436f-8e9c-d8f9d608c92c",
+      albumBucketName: "",
+      bucketRegion: "",
+      IdentityPoolId: "",
+      s3: null,
       pwdVrfRules: [
         () =>
           this.vrfPassword == this.password ||
@@ -168,19 +196,11 @@ export default {
     };
   },
   methods: {
-    changeProfile() {
-      this.file = this.$refs.file.files[0];
-      console.log(this.file);
-      alert("프로필 사진 변경!");
-    },
-    changeNickname() {
-      alert("닉네임 변경!");
-    },
-    changePassword() {
-      alert("비밀번호 변경!");
-    },
-    upload() {
-      this.dialog = false;
+    setS3Varialbes() {
+      this.albumBucketName = s3Config.albumBucketName;
+      this.bucketRegion = s3Config.bucketRegion;
+      this.IdentityPoolId = s3Config.IdentityPoolId;
+
       AWS.config.update({
         region: this.bucketRegion,
         credentials: new AWS.CognitoIdentityCredentials({
@@ -188,16 +208,73 @@ export default {
         }),
       });
 
-      let s3 = new AWS.S3({
+      this.s3 = new AWS.S3({
         apiVersion: "2006-03-01",
         params: {
           Bucket: this.albumBucketName,
         },
       });
+    },
+    changeProfile() {
+      this.file = this.$refs.file.files[0];
+      console.log(this.file);
+      alert("프로필 사진 변경!");
+    },
+    changeNickname() {
+      const nickname = this.$store.state.nickName;
+      const newNickname = this.newNickname;
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `${this.$store.state.accessToken}`;
+      console.log(`닉네임: ${nickname}, 새로운 닉네임: ${newNickname}`);
+      this.$store
+        .dispatch("UPDATEUSER", { nickname, newNickname })
+        .then(() => {
+          this.newNickname = "";
+          this.nicknameDialog = false;
+          window.location.reload();
+        })
+        .catch((e) => {
+          if (e.response.request.status === 500) {
+            alert("중복된 아이디 입니다!");
+            this.newNickname = "";
+            this.$refs.newNickname.focus();
+          }
+        });
+    },
+    changePassword() {
+      const nickname = this.title;
+      const password = crypto
+        .createHash("sha256")
+        .update(this.password)
+        .digest("base64")
+        .replace("=", "");
+      const resourceHost = "http://localhost:3000/api";
+
+      const headers = {
+        "Content-type": "application/json; charset=UTF-8",
+        Accept: "*/*",
+        "Access-Control-Allow-Origin": "*",
+      };
+
+      axios
+        .put(`${resourceHost}/users/password`, { nickname, password }, headers)
+        .then(() => {
+          this.password = "";
+          this.vrfPassword = "";
+          this.passwordDialog = false;
+        })
+        .catch((e) => {
+          alert("비밀번호 변경을 실패했습니다.");
+          console.log(e);
+        });
+    },
+    upload() {
+      this.dialog = false;
 
       let photoKey = this.file.name;
 
-      s3.upload(
+      this.s3.upload(
         {
           Key: photoKey,
           body: this.file,

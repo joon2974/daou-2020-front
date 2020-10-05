@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
+import createPersistedState from "vuex-persistedstate";
 
 Vue.use(Vuex);
 
@@ -24,14 +25,16 @@ export default new Vuex.Store({
       state.accessToken = user.auth_token;
       state.userId = user.data.userId;
       state.nickName = user.data.nickname;
+
+      localStorage.accessToken = user.auth_token;
     },
     LOGOUT(state) {
       state.accessToken = null;
+      delete localStorage.accessToken;
     },
   },
   actions: {
     LOGIN({ commit }, { nickname, password }) {
-      console.log(`닉네임: ${nickname}, 비번: ${password}`);
       return axios
         .post(`${resourceHost}/users/login`, { nickname, password }, headers)
         .then((data) => {
@@ -43,8 +46,10 @@ export default new Vuex.Store({
         });
     },
     LOGOUT({ commit }) {
+      axios.defaults.headers.common["Authorization"] = undefined;
       commit("LOGOUT");
     },
   },
   modules: {},
+  plugins: [createPersistedState()],
 });

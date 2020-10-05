@@ -82,8 +82,6 @@ export default {
         .digest("base64")
         .replace("=", "");
 
-      console.log(`아이디: ${nickname}, 패스워드: ${password}`);
-
       axios
         .post(`${resourceHost}/users`, { nickname, password }, headers)
         .then(() => {

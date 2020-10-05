@@ -30,7 +30,7 @@
       <v-btn depressed="depressed" @click="goToHome">
         <v-toolbar-title>
           <v-row>
-            <v-col cols="6"><v-img src="./assets/daou_logo.png" /></v-col>
+            <v-col cols="6"><v-img src="./assets/daou_logo.png"/></v-col>
             <v-col cols="6" class="my-4 font-weight-bold"
               ><span v-text="title"
             /></v-col>

@@ -1,6 +1,6 @@
 <template>
   <v-form>
-    <v-simple-table>
+    <v-simple-table outline>
       <template slot="default">
         <tbody>
           <tr>
@@ -27,6 +27,11 @@
             <td>문제</td>
             <td>
               {{ post.problem.problemId }} - {{ post.problem.problemTitle }}
+              <br />
+              <!-- url 유효성 검사 필요 -->
+              <a target="_blank" :href="post.problem.problemLink">{{
+                post.problem.problemLink
+              }}</a>
             </td>
           </tr>
           <tr>

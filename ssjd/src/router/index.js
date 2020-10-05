@@ -19,6 +19,7 @@ const routerOptions = [
   { path: "/board", component: "BoardView" },
   { path: "/BJ", component: "BJView" },
   { path: "/mypage", component: "MyPageView", beforeEnter: requiresAuth() },
+  { path: "/chat/:postId", component: "BoardDetailView" },
   { path: "*", component: "NotFound" },
 ];
 

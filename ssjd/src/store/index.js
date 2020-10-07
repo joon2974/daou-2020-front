@@ -19,6 +19,14 @@ export default new Vuex.Store({
     userId: "",
     nickName: "",
     accessToken: null,
+    cardImages: [
+      "https://cdn.vuetifyjs.com/images/cards/house.jpg",
+      "https://cdn.vuetifyjs.com/images/cards/road.jpg",
+      "https://cdn.vuetifyjs.com/images/cards/docks.jpg",
+      "https://picsum.photos/500/300?image=2",
+      "https://picsum.photos/500/300?image=39",
+      "https://picsum.photos/500/300?image=60",
+    ],
   },
   mutations: {
     LOGIN(state, user) {

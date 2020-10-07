@@ -119,8 +119,8 @@ export default {
       //   console.log(e);
       // }
       this.isAuthenticated = token === undefined ? false : true;
-      if (this.isAuthenticated) this.$router.push("/");
-      else this.$router.push("/signin");
+      // if (this.isAuthenticated) this.$router.push("/");
+      // else this.$router.push("/signin");
     },
     logout() {
       this.$store.dispatch("LOGOUT").then(() => {

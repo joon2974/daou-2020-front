@@ -29,10 +29,9 @@ const requiresAuth = () => (from, to, next) => {
 };
 
 const routerOptions = [
-  { path: "/", component: "HomeView" },
+  { path: "/", component: "BoardView" },
   { path: "/signin", component: "SignInView" },
-  { path: "/signup", component: "NotFound" },
-  { path: "/board", component: "BoardView" },
+  { path: "/board", component: "HomeView" },
   { path: "/BJ", component: "BJView" },
   { path: "/mypage", component: "MyPageView", beforeEnter: requiresAuth() },
   { path: "*", component: "NotFound" },

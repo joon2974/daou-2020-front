@@ -18,21 +18,18 @@ export default new Vuex.Store({
   state: {
     userId: "",
     nickName: "",
-    accessToken: null,
+    accessToken: undefined,
   },
   mutations: {
     LOGIN(state, user) {
       state.accessToken = user.auth_token;
       state.userId = user.data.userId;
       state.nickName = user.data.nickname;
-
-      localStorage.accessToken = user.auth_token;
     },
     LOGOUT(state) {
-      state.accessToken = null;
+      state.accessToken = undefined;
       state.userId = "";
       state.nickName = "";
-      delete localStorage.accessToken;
     },
     UPDATEUSER(state, user) {
       state.userId = user.data.userId;

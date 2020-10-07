@@ -53,13 +53,20 @@ export default {
   },
   methods: {
     logIn() {
-      const password = crypto
-        .createHash("sha256")
-        .update(this.password)
-        .digest("base64")
-        .replace("=", "");
       const nickname = this.id;
-
+      const salt = nickname.concat(
+        nickname.slice(2, nickname.length - 2),
+        nickname
+          .split("")
+          .reverse()
+          .join("")
+          .slice(0, nickname.length - 1),
+        nickname.slice(3, nickname.length - 3)
+      );
+      const password = crypto
+        .pbkdf2Sync(this.password, salt, 1038, 64, "sha512")
+        .toString("base64")
+        .replace(/=/gi, "");
       this.$store
         .dispatch("LOGIN", { nickname, password })
         .then(() => this.redirect())

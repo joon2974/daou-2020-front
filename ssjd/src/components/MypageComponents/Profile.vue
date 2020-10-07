@@ -1,5 +1,5 @@
 <template>
-  <v-card color="#2484c6" dark elevation="12">
+  <v-card color="#2484c6" dark elevation="12" class="mx-16">
     <div class="d-flex justify-space-between">
       <div class="d-flex flex-row">
         <div class="d-flex flex-column">
@@ -27,6 +27,7 @@
                   <v-file-input
                     label="File input"
                     filled
+                    show-size
                     prepend-icon="mdi-camera"
                     @change="changeProfile"
                     ref="file"
@@ -47,7 +48,7 @@
         </div>
         <div class="d-flex flex-column">
           <v-card-title class="text-h3 mt-5" v-text="title"></v-card-title>
-          <v-card-subtitle class="mt-2" v-text="subtitle"></v-card-subtitle>
+          <v-card-subtitle class="mt-2" v-text="subtitle"> </v-card-subtitle>
         </div>
       </div>
 
@@ -154,11 +155,14 @@
 import AWS from "aws-sdk";
 import axios from "axios";
 import crypto from "crypto";
+import { mapState } from "vuex";
 import { s3Config } from "../../../secretStrings";
+import { httpInfos } from "../../../secretStrings";
 
 export default {
   created() {
     this.setS3Varialbes();
+    this.getUserPostsCount();
   },
   data() {
     return {
@@ -195,7 +199,23 @@ export default {
       ],
     };
   },
+  computed: {
+    ...mapState(["userId"]),
+  },
   methods: {
+    getUserPostsCount() {
+      return axios
+        .get(
+          `${httpInfos.resourceHost}/posts/number/${this.userId}`,
+          httpInfos.headers
+        )
+        .then((data) => {
+          this.subtitle = `내가 푼 문제 갯수: ${data.data}문제`;
+        })
+        .catch((e) => {
+          console.log(`api 에러: ${e}`);
+        });
+    },
     setS3Varialbes() {
       this.albumBucketName = s3Config.albumBucketName;
       this.bucketRegion = s3Config.bucketRegion;
@@ -215,10 +235,9 @@ export default {
         },
       });
     },
-    changeProfile() {
-      this.file = this.$refs.file.files[0];
+    changeProfile(file) {
+      this.file = file;
       console.log(this.file);
-      alert("프로필 사진 변경!");
     },
     changeNickname() {
       const nickname = this.$store.state.nickName;
@@ -233,6 +252,7 @@ export default {
           this.newNickname = "";
           this.nicknameDialog = false;
           window.location.reload();
+          alert("닉네임 변경이 완료되었습니다!");
         })
         .catch((e) => {
           if (e.response.request.status === 500) {
@@ -244,25 +264,31 @@ export default {
     },
     changePassword() {
       const nickname = this.title;
+      const salt = nickname.concat(
+        nickname.slice(2, nickname.length - 2),
+        nickname
+          .split("")
+          .reverse()
+          .join("")
+          .slice(0, nickname.length - 1),
+        nickname.slice(3, nickname.length - 3)
+      );
       const password = crypto
-        .createHash("sha256")
-        .update(this.password)
-        .digest("base64")
-        .replace("=", "");
-      const resourceHost = "http://localhost:3000/api";
-
-      const headers = {
-        "Content-type": "application/json; charset=UTF-8",
-        Accept: "*/*",
-        "Access-Control-Allow-Origin": "*",
-      };
+        .pbkdf2Sync(this.password, salt, 1038, 64, "sha512")
+        .toString("base64")
+        .replace(/=/gi, "");
 
       axios
-        .put(`${resourceHost}/users/password`, { nickname, password }, headers)
+        .put(
+          `${httpInfos.resourceHost}/users/password`,
+          { nickname, password },
+          httpInfos.headers
+        )
         .then(() => {
           this.password = "";
           this.vrfPassword = "";
           this.passwordDialog = false;
+          alert("비밀번호 변경을 완료하였습니다!");
         })
         .catch((e) => {
           alert("비밀번호 변경을 실패했습니다.");
@@ -270,14 +296,13 @@ export default {
         });
     },
     upload() {
-      this.dialog = false;
-
-      let photoKey = this.file.name;
+      let photoKey = this.title;
 
       this.s3.upload(
         {
           Key: photoKey,
-          body: this.file,
+          Body: this.file,
+          Bucket: this.albumBucketName,
           ACL: "public-read",
         },
         (err, data) => {
@@ -290,8 +315,10 @@ export default {
           }
           alert("Successfully uploaded photo");
           console.log(data);
+          console.log("파일 업로드 완료");
         }
       );
+      this.dialog = false;
     },
   },
 };

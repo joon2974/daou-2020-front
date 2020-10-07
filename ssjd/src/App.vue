@@ -62,6 +62,7 @@
 
 <script>
 import { mapState } from "vuex";
+import axios from "axios";
 // import jwt from "jsonwebtoken";
 // import { jwtSalt } from "../secretStrings";
 
@@ -109,7 +110,7 @@ export default {
       this.$router.push("/");
     },
     loginChk() {
-      const token = localStorage.accessToken;
+      const token = this.accessToken;
       // jwt 복호화 참고
       // console.log(`솔트: ${jwtSalt.salt}`);
       // try {
@@ -119,8 +120,9 @@ export default {
       //   console.log(e);
       // }
       this.isAuthenticated = token === undefined ? false : true;
-      if (this.isAuthenticated) this.$router.push("/");
-      else this.$router.push("/signin");
+      if (this.isAuthenticated) {
+        axios.defaults.headers.common["Authorization"] = `${this.accessToken}`;
+      } else this.$router.push("/signin");
     },
     logout() {
       this.$store.dispatch("LOGOUT").then(() => {
@@ -137,11 +139,11 @@ export default {
     console.log(`로그인 여부: ${this.isAuthenticated}`);
   },
   updated() {
-    const token = localStorage.accessToken;
+    const token = this.accessToken;
     this.isAuthenticated = token === undefined ? false : true;
   },
   computed: {
-    ...mapState(["userId", "nickName"]),
+    ...mapState(["userId", "nickName", "accessToken"]),
     parallaxHeight() {
       switch (this.$vuetify.breakpoint.name) {
         case "xs":

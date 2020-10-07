@@ -1,38 +1,36 @@
 <template>
   <div>
-    <label v-show="messages.length === 0" style="color:gray"
+    <label
+      v-show="!messages || (messages && messages.length === 0)"
+      style="color:gray;"
       >Start Chatting
     </label>
 
-    <div class="justify-center" v-for="(msg, index) in messages" :key="index">
+    <div v-for="(msg, index) in messages" :key="index">
       <!-- Q. center로 ㅠㅠ -->
-      <!-- <label class="align-self-center">date</label> -->
       <v-list-item>
-        <!-- userId_left -->
-        <v-list-item-action class="justify-self-start">
-          <!-- <label>{{ msg.users.nickname }} : </label> -->
-          <v-avatar color="primary">
-            <!-- <span class="white--text">{{ msg.users.nickname }}</span> -->
+        <!-- 왼쪽: user 정보 -->
+        <v-list-item-action class="justify-center">
+          <v-avatar class="mb-1 align-self-center" color="primary">
             <v-icon dark>
               mdi-account-circle
             </v-icon>
-            <!-- <img src="../../assets/logo.png" :alt="msg.users.nickname" /> -->
           </v-avatar>
           <label class="align-self-center">{{ msg.users.nickname }}</label>
         </v-list-item-action>
 
-        <!-- msg content -->
+        <!-- 오른쪽: 메시지 -->
         <v-list-item-content>
           <v-textarea
+            class="pa-2"
             :value="msg.content"
+            solo
             readonly
             dense
             rows="1"
-            outlined
             auto-grow
             hide-details
           >
-            <!-- <template v-slot:label>{{ msg.users.nickname }}</template> -->
           </v-textarea>
 
           <!-- send date -->
@@ -42,12 +40,22 @@
         </v-list-item-content>
       </v-list-item>
     </div>
+
+    <!-- 연결이 끊어졌을 때 -->
+    <div v-show="connected === false" style="border: 1px solid lightgray ;">
+      <v-list-item style="display: inline-flex;">
+        <v-list-item-title>연결이 끊어졌습니다</v-list-item-title>
+        <v-list-item-action>
+          <v-btn type="submit" elevation="1" @click="reConnect()">재연결</v-btn>
+        </v-list-item-action>
+      </v-list-item>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  props: ["messages"],
+  props: ["messages", "connected"],
 
   computed: {},
 
@@ -66,6 +74,11 @@ export default {
       day = [month, day].join("/");
       var time = [hour, min].join(":");
       return [day, time].join(" ");
+    },
+
+    reConnect() {
+      console.log(`reConnect`);
+      this.$emit("re-connect");
     },
   },
 

@@ -1,7 +1,12 @@
 <template>
   <v-form @submit.prevent="sendMsg">
-    <v-label>~메시지를 입력하시오~</v-label>
+    <v-label>~메시지를 입력하시오~</v-label><br />
+    <!-- user정보 -->
+    <v-label
+      >내 id : <strong>{{ nickName }}</strong></v-label
+    >
     <v-row>
+      <!-- 메시지 입력칸 -->
       <v-col cols="9">
         <v-text-field
           v-model="message"
@@ -10,6 +15,7 @@
         ></v-text-field>
       </v-col>
 
+      <!-- 전송버튼 -->
       <v-col cols="3">
         <v-btn :disabled="disabled" type="submit">send</v-btn>
       </v-col>
@@ -18,16 +24,10 @@
 </template>
 
 <script>
-// import axios from "axios";
-// const path = "http://localhost:3000/api";
-// const headers = {
-//   "Content-type": "application/json; charset=UTF-8",
-//   Accept: "*/*",
-//   "Access-Control-Allow-Origin": "*",
-// };
+import { mapState } from "vuex";
 
 export default {
-  // props: ["user"],
+  props: ["connected"],
 
   data() {
     return {
@@ -36,8 +36,10 @@ export default {
   },
 
   computed: {
+    ...mapState(["nickName"]),
+
     disabled() {
-      return !this.message;
+      return this.connected === false || !this.message;
     },
   },
 
@@ -49,16 +51,6 @@ export default {
       console.log(`sendChat: ${this.message}`);
       this.$emit("send-message", this.message);
       this.message = "";
-
-      // const postId = 1;
-      // const msg = this.message,
-      //   user = this.user.userId;
-      // axios
-      //   .post(`${path}/chats/${postId}`, { user, msg }, headers)
-      //   .then((res) => {
-      //     console.log(res);
-      //   });
-      // this.message = "";
     },
   },
 };

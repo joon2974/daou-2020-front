@@ -5,15 +5,7 @@
         <tbody>
           <tr>
             <td>사이트</td>
-            <td>{{ post.problem.problemType }}</td>
-            <!-- <td>
-              <v-combobox
-                :v-model="post.problem.problemType"
-                :items="items"
-                label="PlatForm"
-                readonly
-              ></v-combobox>
-            </td> -->
+            <td v-if="post.problem">{{ post.problem.problemSite }}</td>
           </tr>
           <tr>
             <td>언어</td>
@@ -23,10 +15,10 @@
             <td>제목</td>
             <td>{{ post.title }}</td>
           </tr>
-          <tr>
+          <tr class="my-2">
             <td>문제</td>
-            <td>
-              {{ post.problem.problemId }} - {{ post.problem.problemTitle }}
+            <td v-if="post.problem">
+              {{ post.problem.problemTitle }}
               <br />
               <!-- url 유효성 검사 필요 -->
               <a target="_blank" :href="post.problem.problemLink">{{
@@ -36,7 +28,7 @@
           </tr>
           <tr>
             <td>글쓴이</td>
-            <td>{{ post.user.userId }}</td>
+            <td v-if="post.user">{{ post.user.nickname }}</td>
           </tr>
           <tr>
             <td>풀이</td>

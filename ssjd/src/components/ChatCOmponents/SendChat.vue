@@ -1,11 +1,21 @@
 <template>
   <v-form @submit.prevent="sendMsg">
-    <v-label>~메시지를 입력하시오~</v-label>
+    <v-label>~메시지를 입력하시오~</v-label><br />
+    <!-- user정보 -->
+    <v-label
+      >내 id : <strong>{{ nickName }}</strong></v-label
+    >
     <v-row>
+      <!-- 메시지 입력칸 -->
       <v-col cols="9">
-        <v-text-field v-model="message" required></v-text-field>
+        <v-text-field
+          v-model="message"
+          required
+          autocomplete="off"
+        ></v-text-field>
       </v-col>
 
+      <!-- 전송버튼 -->
       <v-col cols="3">
         <v-btn :disabled="disabled" type="submit">send</v-btn>
       </v-col>
@@ -14,24 +24,32 @@
 </template>
 
 <script>
-import axios from "axios";
-const path = "http://localhost:3000/api";
+import { mapState } from "vuex";
 
 export default {
-  props: ["message", "user"],
+  props: ["connected"],
+
+  data() {
+    return {
+      message: "",
+    };
+  },
 
   computed: {
+    ...mapState(["nickName"]),
+
     disabled() {
-      return !this.message;
+      return this.connected === false || !this.message;
     },
   },
 
   methods: {
     sendMsg() {
-      const postId = 1,
-        msg = this.message,
-        user = this.user;
-      axios.post(`${path}/chat/${postId}`, { user, msg }).then(() => {});
+      //this.$socket.emit('서버로 보낼 이벤트명', 데이터);
+      //this.$socket.on('서버에서 받을 이벤트명', 데이터);
+
+      console.log(`sendChat: ${this.message}`);
+      this.$emit("send-message", this.message);
       this.message = "";
     },
   },

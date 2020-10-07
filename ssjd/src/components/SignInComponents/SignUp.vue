@@ -47,6 +47,9 @@ const headers = {
   "Access-Control-Allow-Origin": "*",
 };
 
+// 한글 입력 검사를 위함
+const korean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+
 export default {
   data() {
     return {
@@ -76,13 +79,26 @@ export default {
   methods: {
     signUp() {
       const nickname = this.id;
+      const salt = nickname.concat(
+        nickname.slice(2, nickname.length - 2),
+        nickname
+          .split("")
+          .reverse()
+          .join("")
+          .slice(0, nickname.length - 1),
+        nickname.slice(3, nickname.length - 3)
+      );
       const password = crypto
-        .createHash("sha256")
-        .update(this.password)
-        .digest("base64")
-        .replace("=", "");
+        .pbkdf2Sync(this.password, salt, 1038, 64, "sha512")
+        .toString("base64")
+        .replace(/=/gi, "");
 
-      console.log(`아이디: ${nickname}, 패스워드: ${password}`);
+      if (korean.test(nickname)) {
+        alert("아이디는 영문, 숫자만 가능합니다!");
+        this.id = "";
+        this.$refs.idInput.focus();
+        return;
+      }
 
       axios
         .post(`${resourceHost}/users`, { nickname, password }, headers)

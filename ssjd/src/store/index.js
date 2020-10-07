@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
+import createPersistedState from "vuex-persistedstate";
 
 Vue.use(Vuex);
 
@@ -18,6 +19,14 @@ export default new Vuex.Store({
     userId: "",
     nickName: "",
     accessToken: null,
+    cardImages: [
+      "https://cdn.vuetifyjs.com/images/cards/house.jpg",
+      "https://cdn.vuetifyjs.com/images/cards/road.jpg",
+      "https://cdn.vuetifyjs.com/images/cards/docks.jpg",
+      "https://picsum.photos/500/300?image=2",
+      "https://picsum.photos/500/300?image=39",
+      "https://picsum.photos/500/300?image=60",
+    ],
   },
   mutations: {
     LOGIN(state, user) {
@@ -26,12 +35,18 @@ export default new Vuex.Store({
       state.nickName = user.data.nickname;
     },
     LOGOUT(state) {
-      state.accessToken = null;
+      state.accessToken = undefined;
+      state.userId = "";
+      state.nickName = "";
+    },
+    UPDATEUSER(state, user) {
+      state.userId = user.data.userId;
+      state.nickName = user.data.nickname;
+      state.accessToken = user.auth_token;
     },
   },
   actions: {
     LOGIN({ commit }, { nickname, password }) {
-      console.log(`닉네임: ${nickname}, 비번: ${password}`);
       return axios
         .post(`${resourceHost}/users/login`, { nickname, password }, headers)
         .then((data) => {
@@ -43,8 +58,21 @@ export default new Vuex.Store({
         });
     },
     LOGOUT({ commit }) {
+      axios.defaults.headers.common["Authorization"] = undefined;
       commit("LOGOUT");
+    },
+    UPDATEUSER({ commit }, { nickname, newNickname }) {
+      return axios
+        .put(
+          `${resourceHost}/users/nickname`,
+          { nickname, newNickname },
+          headers
+        )
+        .then((data) => {
+          commit("UPDATEUSER", data.data);
+        });
     },
   },
   modules: {},
+  plugins: [createPersistedState()],
 });

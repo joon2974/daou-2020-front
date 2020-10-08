@@ -31,8 +31,7 @@ const requiresAuth = () => (from, to, next) => {
 const routerOptions = [
   { path: "/", component: "BoardView" },
   { path: "/signin", component: "SignInView" },
-  { path: "/board", component: "HomeView" },
-  { path: "/BJ", component: "BJView" },
+  { path: "/create", component: "CreatePostView" },
   { path: "/mypage", component: "MyPageView", beforeEnter: requiresAuth() },
   { path: "*", component: "NotFound" },
 ];

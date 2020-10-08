@@ -1,14 +1,14 @@
 <template>
   <v-container class="grey lighten-5">
     <v-row no-gutters>
-      <post-card
-        v-for="(post, index) in posts"
-        :key="index"
-        :imageSrc="srcs[index]"
-        :post="post"
-        cols="6"
-      >
-      </post-card>
+      <v-col>
+        <post-card
+          v-for="p in posts"
+          :post="p"
+          :key="p.postId"
+          cols="6"
+        ></post-card>
+      </v-col>
     </v-row>
   </v-container>
 </template>
@@ -26,21 +26,20 @@ export default {
   data() {
     return {
       posts: [],
-      srcs: null,
     };
   },
   components: {
     "post-card": Card,
   },
-  created() {
-    this.srcs = this.$store.state.cardImages;
+  created: function () {
     const pageNum = 0;
     axios
       .get(`http://localhost:3000/api/posts?pageNum=${pageNum}`, headers)
       .then((data) => {
-        this.posts = [...data.data];
+        console.log(data);
+        this.posts = [...data.data.content];
+        console.log(this.posts);
       });
-    console.log(this.posts);
   },
 };
 </script>

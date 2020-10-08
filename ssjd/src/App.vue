@@ -63,8 +63,7 @@
 <script>
 import { mapState } from "vuex";
 import axios from "axios";
-// import jwt from "jsonwebtoken";
-// import { jwtSalt } from "../secretStrings";
+import { httpInfos } from "../secretStrings";
 
 export default {
   data() {
@@ -77,7 +76,7 @@ export default {
       items: [
         {
           icon: "mdi-clipboard-text-outline",
-          title: "나의 풀이",
+          title: "마이 페이지",
           to: "/mypage",
         },
         {
@@ -87,13 +86,8 @@ export default {
         },
         {
           icon: "mdi-briefcase-outline",
-          title: "백준",
-          to: "/BJ",
-        },
-        {
-          icon: "mdi-chat",
-          title: "프로그래머스",
-          to: "/board",
+          title: "글쓰기",
+          to: "/create",
         },
       ],
       miniVariant: false,
@@ -111,14 +105,6 @@ export default {
     },
     loginChk() {
       const token = this.accessToken;
-      // jwt 복호화 참고
-      // console.log(`솔트: ${jwtSalt.salt}`);
-      // try {
-      //   const decoded = jwt.verify(token, jwtSalt.salt);
-      //   console.log(decoded);
-      // } catch (e) {
-      //   console.log(e);
-      // }
       this.isAuthenticated = token === undefined ? false : true;
       if (this.isAuthenticated) {
         axios.defaults.headers.common["Authorization"] = `${this.accessToken}`;
@@ -133,10 +119,21 @@ export default {
     login() {
       if (this.$route.path !== "/signin") this.$router.push("/signin");
     },
+    test() {
+      console.log(httpInfos.headers);
+      axios
+        .get(
+          "https://www.acmicpc.net/problem/11723123123123",
+          httpInfos.headers
+        )
+        .then((data) => console.log(`성공: ${data}`))
+        .catch((e) => console.log(e));
+    },
   },
   created() {
     this.loginChk();
     console.log(`로그인 여부: ${this.isAuthenticated}`);
+    this.test();
   },
   updated() {
     const token = this.accessToken;

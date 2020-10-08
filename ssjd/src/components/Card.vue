@@ -1,12 +1,19 @@
 <template>
   <v-col cols="6">
     <v-card class="mx-auto">
-      <v-img class="white--text align-end" height="200px" :src="this.imageSrc">
-        <v-card-title
-          >{{ this.post.problem.problemSite }} -
-          {{ this.post.problem.problemTitle }}
-        </v-card-title>
-      </v-img>
+      <v-row justify="center">
+        <v-img
+          class="white--text align-end"
+          max-width="500px"
+          max-height="300px"
+          :src="this.imageSrc"
+        >
+          <v-card-title
+            >{{ this.post.problem.problemSite }} -
+            {{ this.post.problem.problemTitle }}
+          </v-card-title>
+        </v-img>
+      </v-row>
 
       <v-card-subtitle class="pb-0">
         {{ this.post.title }}
@@ -19,11 +26,11 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-btn color="purple" text>
+        <v-btn color="purple" text outlined>
           {{ this.post.user.nickname }}
         </v-btn>
 
-        <v-btn @click="inThePosts" color="orange" text>
+        <v-btn @click="inThePosts" color="orange" text outlined>
           {{ this.post.problem.problemTitle }}
         </v-btn>
       </v-card-actions>

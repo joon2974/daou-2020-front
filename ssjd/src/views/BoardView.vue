@@ -1,9 +1,9 @@
 <template>
   <v-container class="grey lighten-5">
     <v-row no-gutters>
-      <v-flex xs12 class="text-center" mt-5> </v-flex>
+      <v-flex xs12 class="text-center" mt-3> </v-flex>
       <v-container>
-        <v-flex xs12 offset-xs7>
+        <v-flex xs12 offset-xs4>
           <v-row>
             <v-text-field
               label="검색어를 입력해주세요."
@@ -18,13 +18,56 @@
             <v-btn depressed center color="blue white--text">검색</v-btn>
           </v-row>
         </v-flex>
+        <v-flex xs12>
+          <v-card>
+            <v-card-text>
+              <v-container fluid>
+                <v-layout row wrap ma-0>
+                  <v-flex xs10 sm5 md5 offset-xs2>
+                    <v-radio-group v-model="ex7" column>
+                      <v-radio
+                        label="프로그래머스"
+                        color="primary"
+                        value="programmers"
+                      ></v-radio>
+                      <v-radio
+                        label="백준"
+                        color="primary"
+                        value="backjun"
+                      ></v-radio>
+                    </v-radio-group>
+                  </v-flex>
+                  <v-flex xs10 sm5 md5>
+                    <v-radio-group v-model="ex8" column>
+                      <v-radio label="C++" color="error" value="C++"></v-radio>
+                      <v-radio
+                        label="Java"
+                        color="error"
+                        value="Java"
+                      ></v-radio>
+                      <v-radio
+                        label="Javascript"
+                        color="error"
+                        value="Javascript"
+                      ></v-radio>
+                      <v-radio
+                        label="Python"
+                        color="error"
+                        value="Python"
+                      ></v-radio>
+                    </v-radio-group>
+                  </v-flex>
+                </v-layout>
+              </v-container>
+            </v-card-text>
+          </v-card>
+        </v-flex>
       </v-container>
       <post-card
         v-for="(post, index) in posts"
         :key="index"
         :imageSrc="srcs[index % 6]"
         :post="post"
-        cols="6"
       >
       </post-card>
       <infinite-loading @infinite="infiniteHandler" spinner="waveDots">
@@ -54,7 +97,10 @@ export default {
     return {
       posts: [],
       limit: 0,
+      language: "",
+      site: "",
       srcs: null,
+      item: 0,
     };
   },
   name: "Topic",

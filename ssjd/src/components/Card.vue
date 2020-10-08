@@ -1,6 +1,6 @@
 <template>
   <v-col cols="6">
-    <v-card class="mx-auto">
+    <v-card class="ma-10" max-width="550px">
       <v-row justify="center">
         <v-img
           class="white--text align-end"

@@ -30,7 +30,7 @@
       <v-btn depressed="depressed" @click="goToHome">
         <v-toolbar-title>
           <v-row>
-            <v-col cols="6"><v-img src="./assets/daou_logo.png"/></v-col>
+            <v-col cols="6"><v-img src="./assets/daou_logo.png" /></v-col>
             <v-col cols="6" class="my-4 font-weight-bold"
               ><span v-text="title"
             /></v-col>
@@ -42,7 +42,7 @@
         <v-icon>mdi-logout</v-icon>
       </v-btn>
       <v-btn icon v-else @click="login">
-        <span>로그인</span>
+        <v-icon>mdi-login</v-icon>
       </v-btn>
     </v-app-bar>
 
@@ -63,7 +63,6 @@
 <script>
 import { mapState } from "vuex";
 import axios from "axios";
-import { httpInfos } from "../secretStrings";
 
 export default {
   data() {
@@ -105,7 +104,7 @@ export default {
     },
     loginChk() {
       const token = this.accessToken;
-      this.isAuthenticated = token === undefined ? false : true;
+      this.isAuthenticated = token === (undefined || null) ? false : true;
       if (this.isAuthenticated) {
         axios.defaults.headers.common["Authorization"] = `${this.accessToken}`;
       } else this.$router.push("/signin");
@@ -119,21 +118,25 @@ export default {
     login() {
       if (this.$route.path !== "/signin") this.$router.push("/signin");
     },
-    test() {
-      console.log(httpInfos.headers);
-      axios
-        .get(
-          "https://www.acmicpc.net/problem/11723123123123",
-          httpInfos.headers
-        )
-        .then((data) => console.log(`성공: ${data}`))
-        .catch((e) => console.log(e));
-    },
+    // returnStatus(req, status) {
+    //   if (status == 200) {
+    //     console.log("url available");
+    //   } else {
+    //     console.log(`The url returned status code ${status}`);
+    //   }
+    // },
+    // fetchStatus(address) {
+    //   let client = new XMLHttpRequest();
+    //   client.onreadystatechange = function() {
+    //     if (this.readyState == 4) this.returnStatus(this, this.status);
+    //   };
+    //   client.open("HEAD", address);
+    //   client.send();
+    // },
   },
   created() {
     this.loginChk();
     console.log(`로그인 여부: ${this.isAuthenticated}`);
-    this.test();
   },
   updated() {
     const token = this.accessToken;

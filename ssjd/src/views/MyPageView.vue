@@ -24,6 +24,7 @@
 import axios from "axios";
 import { mapState } from "vuex";
 import { httpInfos } from "../../secretStrings";
+import { generateCsrfToken } from "../../secretStrings";
 import Profile from "../components/MypageComponents/Profile";
 import Card from "../components/MypageComponents/Card";
 
@@ -43,7 +44,13 @@ export default {
   },
   methods: {
     loadData() {
-      return axios
+      const csrfToken = generateCsrfToken().replace(/=/gi, "");
+      this.$cookies.set("CSRF_TOKEN", csrfToken);
+
+      axios.defaults.headers.common["CSRF_TOKEN"] = csrfToken;
+      axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = this.$cookies.get("CSRF_TOKEN");
+
+      axios
         .get(
           `${httpInfos.resourceHost}/posts/users/${this.userId}?pageNum=0`,
           httpInfos.headers
@@ -54,6 +61,10 @@ export default {
         .catch((e) => {
           console.log(`api 에러: ${e}`);
         });
+
+      axios.defaults.headers.common["CSRF_TOKEN"] = null;
+      axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = null;
+      this.$cookies.remove("CSRF_TOKEN");
     },
   },
   computed: {

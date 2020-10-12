@@ -14,6 +14,7 @@
 import axios from "axios";
 import Card from "../components/Card";
 import { httpInfos } from "../../secretStrings";
+import { generateCsrfToken } from "../../secretStrings";
 
 export default {
   data() {
@@ -34,6 +35,12 @@ export default {
   },
   created: function() {
     const pageNum = 0;
+    const csrfToken = generateCsrfToken().replace(/=/gi, "");
+    this.$cookies.set("CSRF_TOKEN", csrfToken);
+
+    axios.defaults.headers.common["CSRF_TOKEN"] = csrfToken;
+    axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = this.$cookies.get("CSRF_TOKEN");
+
     axios
       .get(
         `http://localhost:3000/api/posts?pageNum=${pageNum}`,
@@ -43,7 +50,15 @@ export default {
         console.log(data);
         this.posts = [...data.data];
         console.log(this.posts);
+      })
+      .catch((err) => {
+        console.log(`Board View Err: ${err}`);
+        this.$router.push("/signin");
       });
+
+      delete axios.defaults.headers.common["CSRF_TOKEN"];
+      delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
+      this.$cookies.remove("CSRF_TOKEN");
   },
 };
 </script>

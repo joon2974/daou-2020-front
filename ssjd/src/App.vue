@@ -107,7 +107,9 @@ export default {
       this.isAuthenticated = token === (undefined || null) ? false : true;
       if (this.isAuthenticated) {
         axios.defaults.headers.common["Authorization"] = `${this.accessToken}`;
-      } else this.$router.push("/signin");
+      } else {
+        this.$router.push("/signin");
+      }
     },
     logout() {
       this.$store.dispatch("LOGOUT").then(() => {
@@ -118,21 +120,6 @@ export default {
     login() {
       if (this.$route.path !== "/signin") this.$router.push("/signin");
     },
-    // returnStatus(req, status) {
-    //   if (status == 200) {
-    //     console.log("url available");
-    //   } else {
-    //     console.log(`The url returned status code ${status}`);
-    //   }
-    // },
-    // fetchStatus(address) {
-    //   let client = new XMLHttpRequest();
-    //   client.onreadystatechange = function() {
-    //     if (this.readyState == 4) this.returnStatus(this, this.status);
-    //   };
-    //   client.open("HEAD", address);
-    //   client.send();
-    // },
   },
   created() {
     this.loginChk();
@@ -140,7 +127,8 @@ export default {
   },
   updated() {
     const token = this.accessToken;
-    this.isAuthenticated = token === undefined ? false : true;
+    this.isAuthenticated = token === (undefined || null) ? false : true;
+    if (!this.isAuthenticated) this.logout();
   },
   computed: {
     ...mapState(["userId", "nickName", "accessToken"]),

@@ -4,7 +4,8 @@
       <div class="d-flex flex-row">
         <div class="d-flex flex-column">
           <v-avatar class="ma-3" size="150" tile>
-            <v-img src="../../assets/profile.png"></v-img>
+            <v-img :src="profileImgSrc" @error="replaceSrc" v-if="!imageLoadFail"></v-img>
+            <v-img src="../../assets/profile.png" v-else></v-img>
           </v-avatar>
           <v-card-actions>
             <v-dialog v-model="dialog" persistent max-width="290">
@@ -158,11 +159,13 @@ import crypto from "crypto";
 import { mapState } from "vuex";
 import { s3Config } from "../../../secretStrings";
 import { httpInfos } from "../../../secretStrings";
+import { generateCsrfToken } from "../../../secretStrings";
 
 export default {
   created() {
     this.setS3Varialbes();
     this.getUserPostsCount();
+    this.getImage();
   },
   data() {
     return {
@@ -174,6 +177,7 @@ export default {
         "Access-Control-Allow-Origin": "*",
       },
       dialog: false,
+      profileImgSrc: "",
       newNickname: "",
       nicknameDialog: false,
       passwordDialog: false,
@@ -185,6 +189,7 @@ export default {
       albumBucketName: "",
       bucketRegion: "",
       IdentityPoolId: "",
+      imageLoadFail: false,
       s3: null,
       pwdVrfRules: [
         () =>
@@ -200,11 +205,17 @@ export default {
     };
   },
   computed: {
-    ...mapState(["userId"]),
+    ...mapState(["userId", "accessToken"]),
   },
   methods: {
     getUserPostsCount() {
-      return axios
+      const csrfToken = generateCsrfToken().replace(/=/gi, "");
+      this.$cookies.set("CSRF_TOKEN", csrfToken);
+
+      axios.defaults.headers.common["CSRF_TOKEN"] = csrfToken;
+      axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = this.$cookies.get("CSRF_TOKEN");
+
+      axios
         .get(
           `${httpInfos.resourceHost}/posts/number/${this.userId}`,
           httpInfos.headers
@@ -213,8 +224,12 @@ export default {
           this.subtitle = `내가 푼 문제 갯수: ${data.data}문제`;
         })
         .catch((e) => {
-          console.log(`api 에러: ${e}`);
+          console.log(`api 에러 profile: ${e}`);
         });
+
+      delete axios.defaults.headers.common["CSRF_TOKEN"];
+      delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
+      this.$cookies.remove("CSRF_TOKEN");
     },
     setS3Varialbes() {
       this.albumBucketName = s3Config.albumBucketName;
@@ -237,7 +252,13 @@ export default {
     },
     changeProfile(file) {
       this.file = file;
-      console.log(this.file);
+      const parsedName = file.name.split(".");
+      if (parsedName[parsedName.length - 1] !== "jpg") {
+        alert("jpg 파일만 업로드 해주세요!");
+        this.file = null;
+        this.dialog = false;
+        window.location.reload();
+      }
     },
     changeNickname() {
       const nickname = this.$store.state.nickName;
@@ -277,6 +298,11 @@ export default {
         .pbkdf2Sync(this.password, salt, 1038, 64, "sha512")
         .toString("base64")
         .replace(/=/gi, "");
+      const csrfToken = generateCsrfToken().replace(/=/gi, "");
+      this.$cookies.set("CSRF_TOKEN", csrfToken);
+
+      axios.defaults.headers.common["CSRF_TOKEN"] = csrfToken;
+      axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = this.$cookies.get("CSRF_TOKEN");
 
       axios
         .put(
@@ -294,9 +320,13 @@ export default {
           alert("비밀번호 변경을 실패했습니다.");
           console.log(e);
         });
+
+      delete axios.defaults.headers.common["CSRF_TOKEN"];
+      delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
+      this.$cookies.remove("CSRF_TOKEN");
     },
     upload() {
-      let photoKey = this.title;
+      let photoKey = this.userId;
 
       this.s3.upload(
         {
@@ -320,6 +350,36 @@ export default {
       );
       this.dialog = false;
     },
+    getImage() {
+      this.s3.getSignedUrl(
+        "getObject",
+        {
+          Bucket: this.albumBucketName,
+          Key: this.userId + ".jpg"
+        },
+        (err, url) => {
+          if (err) {
+            console.log(`에러: ${err}`);
+          }
+          this.profileImgSrc = url;
+        }
+      )
+    },
+    deleteImage() {
+      this.s3.deleteObject({
+        Bucket: this.albumBucketName,
+        Key: this.userId + ".jpg"
+      },
+      (err, data) => {
+        if (err) {
+          alert(`Error: ${err}`);
+        }
+        console.log(data);
+      })
+    },
+    replaceSrc() {
+      this.imageLoadFail = true;
+    }
   },
 };
 </script>

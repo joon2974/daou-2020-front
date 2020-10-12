@@ -15,6 +15,7 @@
               centered-input
               v-on:keypup="onkeyup"
               v-on:submit.prevent="onSearch"
+              autocomplete="off"
             >
             </v-text-field>
             <v-btn
@@ -22,7 +23,7 @@
               center
               color="blue white--text"
               v-show="keyword.length"
-              v-on:click="onReset"
+              v-on:click="search(keyword)"
               type="reset"
               class="btn-reset"
               >검색</v-btn
@@ -110,9 +111,13 @@
 <script>
 import axios from "axios";
 import Card from "../components/Card";
-import { httpInfos } from "../../secretStrings";
-import { generateCsrfToken } from "../../secretStrings";
 import InfiniteLoading from "vue-infinite-loading";
+
+const headers = {
+  "Content-type": "application/json; charset=UTF-8",
+  Accept: "*/*",
+  "Access-Control-Allow-Origin": "*",
+};
 
 export default {
   data() {
@@ -156,19 +161,21 @@ export default {
         this.$router.push("/signin");
       });
 
-      delete axios.defaults.headers.common["CSRF_TOKEN"];
-      delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
-      this.$cookies.remove("CSRF_TOKEN");
+    delete axios.defaults.headers.common["CSRF_TOKEN"];
+    delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
+    this.$cookies.remove("CSRF_TOKEN");
   },
   methods: {
     infiniteHandler($state) {
       const EACH_LEN = 6;
       let language = this.language;
       let site = this.site;
+      let keyword = this.keyword;
       console.log(language);
       console.log(site);
-      if (language == "" && site == "") {
-        console.log("기본으로 실행");
+      console.log("keyword" + keyword);
+      if (language.length === 0 && site.length === 0) {
+        console.log("기본 Paging 실행");
         fetch("http://localhost:3000/api/posts?pageNum=" + this.limit, {
           method: "get",
         })
@@ -193,9 +200,9 @@ export default {
           .catch((err) => {
             console.error(err);
           });
-      } else if (language != "") {
+      } else if (language.length !== 0) {
         console.log("language it not NULL");
-        if (site != "") {
+        if (site.length !== 0) {
           // 통합 실행
           console.log("통합 실행");
           fetch(
@@ -219,7 +226,7 @@ export default {
                   $state.loaded();
                   this.limit += 1;
 
-                  if (data.length > 0) {
+                  if (data.length / EACH_LEN < 1) {
                     $state.complete();
                   }
                 } else {
@@ -252,7 +259,7 @@ export default {
                   $state.loaded();
                   this.limit += 1;
 
-                  if (data.length > 0) {
+                  if (data.length / EACH_LEN < 1) {
                     $state.complete();
                   }
                 } else {
@@ -308,11 +315,12 @@ export default {
       // debugger;
     },
     reset() {
-      window.location.reload();
+      window.location.reload().prevent();
     },
     chageSite(value) {
       this.site = value;
       this.post = [];
+
       if (this.language.length === 0) {
         axios
           .get(
@@ -352,6 +360,20 @@ export default {
             language +
             `&pageNum=0&problemSite=` +
             site,
+          headers
+        )
+        .then((data) => {
+          this.posts = [...data.data];
+        });
+    },
+    search(keyword) {
+      console.log(keyword + "검색");
+      this.posts = [];
+      console.log("site : " + this.site);
+      console.log("lang :: " + this.language);
+      axios
+        .get(
+          `http://localhost:3000/api/posts/search/` + keyword + `?pageNum=0`,
           headers
         )
         .then((data) => {

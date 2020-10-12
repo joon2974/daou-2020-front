@@ -91,7 +91,7 @@ export default {
         () => {
           this.connected = true;
 
-          this.stompClient.subscribe(`/sub/receive/${postId}`, (res) => {
+          this.stompClient.subscribe(`/topic/receive/${postId}`, (res) => {
             console.log(JSON.parse(res.body));
             this.messages = [...this.messages, JSON.parse(res.body)];
           });
@@ -100,7 +100,7 @@ export default {
             //join 알리기
             if (this.stompClient && this.stompClient.connected) {
               this.stompClient.send(
-                `/pub/chats/${postId}`,
+                `/app/chats/${postId}`,
                 JSON.stringify({
                   userId: this.userId,
                   content: "",
@@ -128,7 +128,7 @@ export default {
           messageType: "SEND",
         };
         //STOMP 메시지는 string (json->string)
-        this.stompClient.send(`/pub/chats/${postId}`, JSON.stringify(msg), {});
+        this.stompClient.send(`/app/chats/${postId}`, JSON.stringify(msg), {});
       }
     },
 
@@ -141,7 +141,7 @@ export default {
     return {
       connected: false, //소켓 연결 상태
 
-      loadSuccess: false,
+      loadSuccess: false, //게시글 불러오기 성공실패 여부
 
       postId: this.$route.params.postId, //게시글 번호
 

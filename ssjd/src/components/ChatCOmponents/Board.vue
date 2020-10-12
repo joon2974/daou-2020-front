@@ -64,7 +64,6 @@ export default {
 
   data() {
     return {
-      items: ["백준", "Prog", "etc"],
     };
   },
 };

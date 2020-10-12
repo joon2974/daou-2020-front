@@ -1,6 +1,6 @@
 <template>
   <v-col cols="6">
-    <v-card class="mx-auto">
+    <v-card class="mx-1 my-1">
       <v-img class="white--text align-end" height="200px" :src="this.imageSrc">
         <v-card-title
           >{{ this.post.problem.problemSite }} -

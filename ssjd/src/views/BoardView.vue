@@ -39,43 +39,47 @@
                       <v-radio
                         label="프로그래머스"
                         color="primary"
-                        value="programmers"
-                        @click="chageSite('programmers')"
+                        value="프로그래머스"
+                        @click="chageSite('프로그래머스')"
                       ></v-radio>
                       <v-radio
                         label="백준"
                         color="primary"
-                        value="backjun"
-                        name="backjun"
-                        @click="chageSite('backjun')"
+                        value="백준"
+                        name="siteRadio"
+                        @click="chageSite('백준')"
                       ></v-radio>
                     </v-radio-group>
+                    <v-btn tile color="primary" @click="reset()">
+                      <v-icon left> mdi-pencil </v-icon>
+                      초기화
+                    </v-btn>
                   </v-flex>
                   <v-flex xs10 sm5 md5>
                     <v-radio-group v-model="ex8" column>
                       <v-radio
                         label="C++"
                         color="error"
-                        value="C++"
-                        @click="chageLanguage('C++')"
+                        value="c"
+                        @click="chageLanguage('c')"
                       ></v-radio>
                       <v-radio
                         label="Java"
                         color="error"
-                        value="Java"
-                        @click="chageLanguage('Java')"
+                        value="java"
+                        @click="chageLanguage('java')"
                       ></v-radio>
                       <v-radio
                         label="Javascript"
                         color="error"
-                        value="Javascript"
-                        @click="chageLanguage('Javascript')"
+                        value="javascript"
+                        @click="chageLanguage('javascript')"
                       ></v-radio>
                       <v-radio
                         label="Python"
                         color="error"
-                        value="Python"
-                        @click="chageLanguage('Python')"
+                        value="python"
+                        @click="chageLanguage('python')"
                       ></v-radio>
                     </v-radio-group>
                   </v-flex>
@@ -95,7 +99,7 @@
       <infinite-loading @infinite="infiniteHandler" spinner="spiral">
         <div
           slot="no-more"
-          style="color: rgb(102, 102, 102); font-size: 14px; padding: 10px 0px;"
+          style="color: rgb(102, 102, 102); font-size: 14px; padding: 10px 0px"
         >
           목록의 끝입니다 :)
         </div>
@@ -120,9 +124,7 @@ export default {
       posts: [],
       limit: 0,
       language: "",
-      beforeLanguage: "",
       site: "",
-      beforeSite: "",
       keyword: "",
       srcs: null,
       item: 0,
@@ -152,49 +154,170 @@ export default {
       let site = this.site;
       console.log(language);
       console.log(site);
-      fetch("http://localhost:3000/api/posts?pageNum=" + this.limit, {
-        method: "get",
-      })
-        .then((resp) => {
-          return resp.json();
+      if (language == "" && site == "") {
+        console.log("기본으로 실행");
+        fetch("http://localhost:3000/api/posts?pageNum=" + this.limit, {
+          method: "get",
         })
-        .then((data) => {
-          setTimeout(() => {
-            if (data.length) {
-              this.posts = this.posts.concat(data);
-              $state.loaded();
-              this.limit += 1;
+          .then((resp) => {
+            return resp.json();
+          })
+          .then((data) => {
+            setTimeout(() => {
+              if (data.length) {
+                this.posts = this.posts.concat(data);
+                $state.loaded();
+                this.limit += 1;
 
-              if (data.length / EACH_LEN < 1) {
+                if (data.length / EACH_LEN < 1) {
+                  $state.complete();
+                }
+              } else {
                 $state.complete();
               }
-            } else {
-              $state.complete();
+            }, 500);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      } else if (language != "") {
+        console.log("language it not NULL");
+        if (site != "") {
+          // 통합 실행
+          console.log("통합 실행");
+          fetch(
+            `http://localhost:3000/api/posts/problem/language?language=` +
+              this.language +
+              `&pageNum=` +
+              this.limit +
+              `&problemSite=` +
+              this.site,
+            {
+              method: "get",
             }
-          }, 500);
-        })
-        .catch((err) => {
-          console.error(err);
-        });
+          )
+            .then((resp) => {
+              return resp.json();
+            })
+            .then((data) => {
+              setTimeout(() => {
+                if (data.length) {
+                  this.posts = this.posts.concat(data);
+                  $state.loaded();
+                  this.limit += 1;
+
+                  if (data.length > 0) {
+                    $state.complete();
+                  }
+                } else {
+                  $state.complete();
+                }
+              }, 500);
+            })
+            .catch((err) => {
+              console.error(err);
+            });
+        } else {
+          // language 실행
+          console.log(`language로 실행!`);
+          fetch(
+            `http://localhost:3000/api/posts/language/` +
+              this.language +
+              `?pageNum=` +
+              this.limit,
+            {
+              method: "get",
+            }
+          )
+            .then((resp) => {
+              return resp.json();
+            })
+            .then((data) => {
+              setTimeout(() => {
+                if (data.length) {
+                  this.posts = this.posts.concat(data);
+                  $state.loaded();
+                  this.limit += 1;
+
+                  if (data.length > 0) {
+                    $state.complete();
+                  }
+                } else {
+                  $state.complete();
+                }
+              }, 500);
+            })
+            .catch((err) => {
+              console.error(err);
+            });
+        }
+      } else {
+        // problem
+        console.log("problem 으로 실행");
+        fetch(
+          `http://localhost:3000/api/posts/problem/` +
+            this.site +
+            `?pageNum=` +
+            this.limit,
+          {
+            method: "get",
+          }
+        )
+          .then((resp) => {
+            return resp.json();
+          })
+          .then((data) => {
+            setTimeout(() => {
+              if (data.length) {
+                this.posts = this.posts.concat(data);
+                $state.loaded();
+                this.limit += 1;
+
+                if (data.length / EACH_LEN < 1) {
+                  $state.complete();
+                }
+              } else {
+                $state.complete();
+              }
+            }, 500);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }
     },
-    onSearch(e) {},
+    // onSearch(e) {},
     onkeyup() {
       if (!this.keyword.length) this.onReset();
     },
     onReset() {
       this.keyword = "";
-      debugger;
+      // debugger;
+    },
+    reset() {
+      window.location.reload();
     },
     chageSite(value) {
       this.site = value;
+      this.post = [];
+      if (this.language.length === 0) {
+        axios
+          .get(
+            `http://localhost:3000/api/posts/problem/` + value + `?pageNum=0`,
+            headers
+          )
+          .then((data) => {
+            this.posts = [...data.data];
+          });
+      } else {
+        this.changePlatform(this.site, this.language);
+      }
     },
     chageLanguage(value) {
       console.log(this.site);
-      console.log("??");
       this.language = value;
       this.posts = [];
-      if (this.site == "" || this.site == null) {
-        console.log("실행");
+      if (this.site.length === 0) {
         axios
           .get(
             `http://localhost:3000/api/posts/language/` + value + `?pageNum=0`,
@@ -204,8 +327,23 @@ export default {
             this.posts = [...data.data];
           });
       } else {
-        console.log("안실행" + this.site);
+        this.changePlatform(this.site, this.language);
       }
+    },
+    changePlatform(site, language) {
+      console.log(`통합으로 리스트 불러오기`);
+      this.posts = [];
+      axios
+        .get(
+          `http://localhost:3000/api/posts/problem/language?language=` +
+            language +
+            `&pageNum=0&problemSite=` +
+            site,
+          headers
+        )
+        .then((data) => {
+          this.posts = [...data.data];
+        });
     },
   },
 };

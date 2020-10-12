@@ -7,7 +7,6 @@
           <v-col cols="6">
             <v-combobox
               v-model="selectedLanguage"
-              :items="items"
               label="Language"
               class="pl-2"
               readonly
@@ -39,7 +38,6 @@ export default {
 
   data() {
     return {
-      items: ["Java", "C++", "Python", "Javascript"],
     };
   },
 };

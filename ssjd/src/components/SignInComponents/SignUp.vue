@@ -39,13 +39,7 @@
 <script>
 import crypto from "crypto";
 import axios from "axios";
-
-const resourceHost = "http://localhost:3000/api";
-const headers = {
-  "Content-type": "application/json; charset=UTF-8",
-  Accept: "*/*",
-  "Access-Control-Allow-Origin": "*",
-};
+import { httpInfos } from "../../../secretStrings";
 
 // 한글 입력 검사를 위함
 const korean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
@@ -101,7 +95,11 @@ export default {
       }
 
       axios
-        .post(`${resourceHost}/users`, { nickname, password }, headers)
+        .post(
+          `${httpInfos.resourceHost}/users`,
+          { nickname, password },
+          httpInfos.headers
+        )
         .then(() => {
           (this.id = ""), (this.password = "");
           this.vrfPassword = "";

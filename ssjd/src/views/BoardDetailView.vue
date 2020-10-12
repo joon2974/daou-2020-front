@@ -1,25 +1,25 @@
 <template>
   <v-content>
     <v-row>
-      <v-col cols="12" sm="4">
-        <board :post="boardInfo"></board>
-      </v-col>
+      <v-col cols="6" sm="6">
+        <board :post="boardInfo" class="mb-5" style="background-color: lightgray;"></board>
 
-      <v-col cols="12" sm="4">
-        <codeView
-          :codeOverall="boardInfo.code"
-          :select="boardInfo.language"
-        ></codeView>
-      </v-col>
-
-      <v-col cols="12" sm="4">
         <chatView
           :messages="messages"
           :connected="connected"
           @send-message="sendMessage"
           @re-connect="reConnect"
+          style="background-color: lightgray;"
         >
         </chatView>
+      </v-col>
+
+      <v-col cols="6" sm="6">
+        <codeView
+          :codeOverall="boardInfo.code"
+          :selectedLanguage="boardInfo.language"
+          style="background-color: lightgray;"
+        ></codeView>
       </v-col>
     </v-row>
   </v-content>
@@ -59,6 +59,8 @@ export default {
       .get(`${serverPath}/posts/${postId}`, headers)
       .then((res) => {
         this.boardInfo = res.data;
+        this.loadSuccess = true;
+        this.connect(this.postId, false);
       })
       .catch((res) => {
         alert("잘못된 게시글 정보입니다.");
@@ -71,9 +73,6 @@ export default {
       console.log(res);
       this.messages = res.data;
     });
-
-    //소켓 연결
-    this.connect(postId, false);
   },
 
   computed: {
@@ -82,6 +81,9 @@ export default {
 
   methods: {
     connect(postId, reconnect) {
+      //게시글 정보가 있을 때만 연결
+      if(this.loadSuccess === false) return;
+
       let socket = new SockJS(socketEndPoint);
       this.stompClient = Stomp.over(socket);
       this.stompClient.connect(
@@ -137,7 +139,9 @@ export default {
 
   data() {
     return {
-      connected: "", //소켓 연결 상태
+      connected: false, //소켓 연결 상태
+
+      loadSuccess: false,
 
       postId: this.$route.params.postId, //게시글 번호
 

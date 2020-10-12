@@ -6,7 +6,7 @@
         <v-row>
           <v-col cols="6">
             <v-combobox
-              v-model="select"
+              v-model="selectedLanguage"
               :items="items"
               label="Language"
               class="pl-2"
@@ -16,15 +16,7 @@
         </v-row>
         <v-row>
           <v-col cols="12">
-            <v-textarea
-              label="Code"
-              :value="codeOverall"
-              readonly
-              outlined
-              auto-grow
-              hide-details
-            >
-            </v-textarea>
+            <prism :language="selectedLanguage">{{ codeOverall }}</prism>
           </v-col>
         </v-row>
       </v-container>
@@ -33,17 +25,20 @@
 </template>
 
 <script>
+import Prism from "vue-prism-component";
+
 export default {
   props: {
     codeOverall: String,
-    select: String,
+    selectedLanguage: String,
   },
 
-  components: {},
+  components: {
+    Prism,
+  },
 
   data() {
     return {
-      // select: "",
       items: ["Java", "C++", "Python", "Javascript"],
     };
   },

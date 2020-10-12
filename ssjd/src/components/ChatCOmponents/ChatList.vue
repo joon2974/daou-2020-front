@@ -90,6 +90,7 @@ export default {
   methods: {
 
     convertedDate: function(datetime) {
+      // var today = new Date();
       var date = new Date(datetime);
       var hour = "" + date.getHours(),
         min = "" + date.getMinutes(),

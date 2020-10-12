@@ -37,6 +37,7 @@ const routerOptions = [
   { path: "/create", component: "CreatePostView", beforeEnter: requiresAuth() },
   { path: "/mypage", component: "MyPageView", beforeEnter: requiresAuth() },
   { path: "/chat/:postId", component: "BoardDetailView" },
+  { path: "/test", component: "TestView" },
   { path: "*", component: "NotFound" },
 ];
 

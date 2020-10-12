@@ -2,7 +2,7 @@
   <v-card>
     <v-card-text>
       <v-label>게시글 보기</v-label>
-      <v-simple-table outline>
+      <v-simple-table outline style="table-layout:fixed; word-break:break-all;">
         <template slot="default">
           <tbody>
             <tr>
@@ -57,6 +57,7 @@
 
 <script>
 export default {
+
   props: ["post"],
 
   components: {},

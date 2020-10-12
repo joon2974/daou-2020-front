@@ -12,6 +12,8 @@
           v-model="message"
           required
           autocomplete="off"
+          counter
+          maxlength="150"
         ></v-text-field>
       </v-col>
 
@@ -45,10 +47,6 @@ export default {
 
   methods: {
     sendMsg() {
-      //this.$socket.emit('서버로 보낼 이벤트명', 데이터);
-      //this.$socket.on('서버에서 받을 이벤트명', 데이터);
-
-      console.log(`sendChat: ${this.message}`);
       this.$emit("send-message", this.message);
       this.message = "";
     },

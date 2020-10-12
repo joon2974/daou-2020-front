@@ -1,66 +1,34 @@
 <template>
-  <!-- 리팩토링 plz.... -->
   <v-content>
-    <v-container fluid>
-      <v-layout row wrap>
-        <v-row>
-          <v-col cols="12" sm="4">
-            <v-card>
-              <v-card-text>
-                <v-label>게시글 보기</v-label>
-                <board :post="boardInfo"></board>
-              </v-card-text>
-            </v-card>
-          </v-col>
+    <v-row>
+      <v-col cols="12" sm="4">
+        <board :post="boardInfo"></board>
+      </v-col>
 
-          <v-col cols="12" sm="4">
-            <v-card>
-              <v-card-text>
-                <v-label>코드 보기</v-label>
-                <codeView
-                  :codeOverall="boardInfo.code"
-                  :select="boardInfo.language"
-                ></codeView>
-              </v-card-text>
-            </v-card>
-          </v-col>
+      <v-col cols="12" sm="4">
+        <codeView
+          :codeOverall="boardInfo.code"
+          :select="boardInfo.language"
+        ></codeView>
+      </v-col>
 
-          <v-col cols="12" sm="4">
-            <v-card>
-              <!-- received message -->
-              <v-card-text>
-                <v-label>채팅 목록</v-label>
-                <v-list class="elevation-1 pa-5">
-                  <message-list
-                    :messages="messages"
-                    :connected="connected"
-                    @re-connect="reConnect"
-                  >
-                  </message-list>
-                </v-list>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <!-- enter message -->
-              <my-chat
-                class="pa-5"
-                @send-message="sendMessage"
-                :connected="connected"
-              ></my-chat>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-layout>
-    </v-container>
+      <v-col cols="12" sm="4">
+        <chatView
+          :messages="messages"
+          :connected="connected"
+          @send-message="sendMessage"
+          @re-connect="reConnect"
+        >
+        </chatView>
+      </v-col>
+    </v-row>
   </v-content>
 </template>
 
 <script>
-import Board from "../components/ChatComponents/Board";
-import CodeView from "../components/ChatComponents/Code";
-import SendChat from "../components/ChatComponents/SendChat";
-import Chat from "../components/ChatComponents/ChatList";
+import Board from "@/components/ChatComponents/Board";
+import CodeView from "@/components/ChatComponents/Code";
+import ChatView from "@/components/ChatComponents/ChatView";
 
 import Stomp from "webstomp-client";
 import SockJS from "sockjs-client";
@@ -80,29 +48,32 @@ export default {
   components: {
     board: Board,
     codeView: CodeView,
-    "my-chat": SendChat,
-    "message-list": Chat,
+    chatView: ChatView,
   },
 
   created() {
     let postId = this.postId;
+
+    //게시글 정보 가져오기
     axios
       .get(`${serverPath}/posts/${postId}`, headers)
       .then((res) => {
         this.boardInfo = res.data;
-        console.log(this.boardInfo);
       })
       .catch((res) => {
         alert("잘못된 게시글 정보입니다.");
         console.log(res);
       });
 
+      //메시지 목록 불러오기
     axios.get(`${serverPath}/chats/${postId}`, headers).then((res) => {
+      console.log("getMsg : ");
+      console.log(res);
       this.messages = res.data;
-      console.log(this.messages);
     });
 
-    this.connect();
+    //소켓 연결
+    this.connect(postId, false);
   },
 
   computed: {
@@ -110,31 +81,34 @@ export default {
   },
 
   methods: {
-    connect() {
-      let postId = this.postId;
+    connect(postId, reconnect) {
       let socket = new SockJS(socketEndPoint);
       this.stompClient = Stomp.over(socket);
       this.stompClient.connect(
         {}, //headers
-        (frame) => {
+        () => {
           this.connected = true;
-          console.log("socket connection success!", frame);
-          this.stompClient.subscribe(`/sub/join/${postId}`, (res) => {
-            console.log(res.body); //userId만 찍힌다
-            // this.messages.push({});
-          });
 
           this.stompClient.subscribe(`/sub/receive/${postId}`, (res) => {
-            this.messages.push(JSON.parse(res.body));
+            console.log(JSON.parse(res.body));
+            this.messages = [...this.messages, JSON.parse(res.body)];
           });
 
-          if (this.stompClient && this.stompClient.connected) {
-            this.stompClient.send(
-              `/api/chats/join/${postId}`,
-              JSON.stringify({ userId: this.userId, content: "" }),
-              {}
-            );
+          if(reconnect === false){
+            //join 알리기
+            if (this.stompClient && this.stompClient.connected) {
+              this.stompClient.send(
+                `/pub/chats/${postId}`,
+                JSON.stringify({
+                  userId: this.userId,
+                  content: "",
+                  messageType: "JOIN",
+                }),
+                {}
+              );
+            }
           }
+          
         }, //conn
         (error) => {
           this.connected = false;
@@ -149,30 +123,15 @@ export default {
         const msg = {
           userId: this.userId,
           content: message,
+          messageType: "SEND",
         };
-        this.stompClient.send(`/api/chats/${postId}`, JSON.stringify(msg), {});
+        //STOMP 메시지는 string (json->string)
+        this.stompClient.send(`/pub/chats/${postId}`, JSON.stringify(msg), {});
       }
     },
 
-    //위의 connect 코드를 쓰고 싶다..
     reConnect() {
-      let postId = this.postId;
-      let socket = new SockJS(socketEndPoint);
-      this.stompClient = Stomp.over(socket);
-      this.stompClient.connect(
-        {}, //headers
-        (frame) => {
-          this.connected = true;
-          console.log("socket connection success!", frame);
-          this.stompClient.subscribe(`/sub/receive/${postId}`, (res) => {
-            this.messages.push(JSON.parse(res.body));
-          });
-        }, //conn
-        (error) => {
-          this.connected = false;
-          console.log("socket connection fail...", error);
-        } //fail
-      );
+      this.connect(this.postId, true);
     },
   },
 

@@ -7,19 +7,32 @@
     </label>
 
     <div v-for="(msg, index) in messages" :key="index">
-      <!-- Q. center로 ㅠㅠ -->
-      <v-list-item>
-        <!-- 왼쪽: user 정보 -->
-        <v-list-item-action class="justify-center">
-          <v-avatar class="mb-1 align-self-center" color="primary">
-            <v-icon dark>
-              mdi-account-circle
-            </v-icon>
-          </v-avatar>
-          <label class="align-self-center">{{ msg.users.nickname }}</label>
-        </v-list-item-action>
+      <v-list-item v-if="msg.messageId === 0">
+        <v-list-item-content>
+          <v-textarea
+            class="pa-2"
+            style="border: 1px solid lightgray ;"
+            :value="msg.users.nickname + '님이 들어왔습니다.'"
+            flat
+            solo
+            readonly
+            dense
+            rows="1"
+            auto-grow
+            hide-details
+          >
+          </v-textarea>
+        </v-list-item-content>
+      </v-list-item>
+      
+      <v-list-item v-else>
+        <!-- 왼쪽: 메시지를 보낸 다른 user 정보 -->
+        <userProfile
+          v-show="msg.users.userId !== userId"
+          :nickname="msg.users.nickname"
+        ></userProfile>
 
-        <!-- 오른쪽: 메시지 -->
+        <!-- 메시지 -->
         <v-list-item-content>
           <v-textarea
             class="pa-2"
@@ -38,6 +51,12 @@
             {{ convertedDate(msg.createdDate) }}
           </div>
         </v-list-item-content>
+
+        <!-- 오른쪽: 메시지를 보낸 내 user 정보 -->
+        <userProfile
+          v-show="msg.users.userId === userId"
+          :nickname="msg.users.nickname"
+        ></userProfile>
       </v-list-item>
     </div>
 
@@ -54,12 +73,22 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+import UserProfile from "@/components/ChatComponents/UserProfile";
+
 export default {
   props: ["messages", "connected"],
 
-  computed: {},
+  components: {
+    userProfile: UserProfile,
+  },
+
+  computed: {
+    ...mapState(["userId"]),
+  },
 
   methods: {
+
     convertedDate: function(datetime) {
       var date = new Date(datetime);
       var hour = "" + date.getHours(),
@@ -77,7 +106,6 @@ export default {
     },
 
     reConnect() {
-      console.log(`reConnect`);
       this.$emit("re-connect");
     },
   },
@@ -89,6 +117,7 @@ export default {
 </script>
 
 <style>
+
 .timestamp {
   padding: 2px 8px;
   margin: 0;

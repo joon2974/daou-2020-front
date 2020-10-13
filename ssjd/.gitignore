@@ -3,6 +3,7 @@ node_modules
 /dist
 secretStrings.js
 TestView.vue
+CSRFView.vue
 
 # local env files
 .env.local

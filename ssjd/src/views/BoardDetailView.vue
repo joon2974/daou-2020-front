@@ -43,6 +43,8 @@ const headers = {
 
 const serverPath = "http://localhost:3000/api";
 const socketEndPoint = "http://localhost:3000/ws";
+const sendUrl = "/app/chats";
+const subUrl = "/topic/receive";
 
 export default {
   components: {
@@ -91,7 +93,7 @@ export default {
         () => {
           this.connected = true;
 
-          this.stompClient.subscribe(`/sub/receive/${postId}`, (res) => {
+          this.stompClient.subscribe(subUrl + `/${postId}`, (res) => {
             console.log(JSON.parse(res.body));
             this.messages = [...this.messages, JSON.parse(res.body)];
           });
@@ -100,7 +102,7 @@ export default {
             //join 알리기
             if (this.stompClient && this.stompClient.connected) {
               this.stompClient.send(
-                `/pub/chats/${postId}`,
+                sendUrl + `/${postId}`,
                 JSON.stringify({
                   userId: this.userId,
                   content: "",
@@ -128,7 +130,7 @@ export default {
           messageType: "SEND",
         };
         //STOMP 메시지는 string (json->string)
-        this.stompClient.send(`/pub/chats/${postId}`, JSON.stringify(msg), {});
+        this.stompClient.send(sendUrl + `/${postId}`, JSON.stringify(msg), {});
       }
     },
 

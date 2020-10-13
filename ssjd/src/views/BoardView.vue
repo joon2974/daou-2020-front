@@ -161,6 +161,9 @@ export default {
         this.$router.push("/signin");
       });
 
+      delete axios.defaults.headers.common["CSRF_TOKEN"];
+      delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
+      this.$cookies.remove("CSRF_TOKEN");
   },
   methods: {
     infiniteHandler($state) {
@@ -170,14 +173,49 @@ export default {
       let keyword = this.keyword;
       console.log(language);
       console.log(site);
-      if (keyword.length !== 0) {
-        console.log("keyword 입력 ");
-      } else {
-        if (language == "" && site == "") {
-          console.log("기본으로 실행");
-          fetch("http://localhost:3000/api/posts?pageNum=" + this.limit, {
-            method: "get",
+      console.log("keyword" + keyword);
+      if (language.length === 0 && site.length === 0) {
+        console.log("기본 Paging 실행");
+        fetch("http://localhost:3000/api/posts?pageNum=" + this.limit, {
+          method: "get",
+        })
+          .then((resp) => {
+            return resp.json();
           })
+          .then((data) => {
+            setTimeout(() => {
+              if (data.length) {
+                this.posts = this.posts.concat(data);
+                $state.loaded();
+                this.limit += 1;
+
+                if (data.length / EACH_LEN < 1) {
+                  $state.complete();
+                }
+              } else {
+                $state.complete();
+              }
+            }, 500);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      } else if (language.length !== 0) {
+        console.log("language it not NULL");
+        if (site.length !== 0) {
+          // 통합 실행
+          console.log("통합 실행");
+          fetch(
+            `http://localhost:3000/api/posts/problem/language?language=` +
+              this.language +
+              `&pageNum=` +
+              this.limit +
+              `&problemSite=` +
+              this.site,
+            {
+              method: "get",
+            }
+          )
             .then((resp) => {
               return resp.json();
             })
@@ -315,11 +353,12 @@ export default {
       // debugger;
     },
     reset() {
-      window.location.reload();
+      window.location.reload().prevent();
     },
     chageSite(value) {
       this.site = value;
       this.post = [];
+
       if (this.language.length === 0) {
         axios
           .get(
@@ -367,16 +406,17 @@ export default {
     },
     search(keyword) {
       console.log(keyword + "검색");
-      if (this.site.length === 0 && this.language.length === 0) {
-        axios
-          .get(
-            `http://localhost:3000/api/posts/search/` + keyword + `?pageNum=0`,
-            headers
-          )
-          .then((data) => {
-            this.posts = [...data.data];
-          });
-      }
+      this.posts = [];
+      console.log("site : " + this.site);
+      console.log("lang :: " + this.language);
+      axios
+        .get(
+          `http://localhost:3000/api/posts/search/` + keyword + `?pageNum=0`,
+          headers
+        )
+        .then((data) => {
+          this.posts = [...data.data];
+        });
     },
   },
 };

@@ -74,7 +74,7 @@ export default {
       depressed: true,
       items: [
         {
-          icon: "mdi-clipboard-text-outline",
+          icon: "mdi-account",
           title: "마이 페이지",
           to: "/mypage",
         },
@@ -92,7 +92,7 @@ export default {
       miniVariant: false,
       right: true,
       rightDrawer: false,
-      title: "SSJD",
+      title: "ALDU",
     };
   },
   methods: {
@@ -103,7 +103,7 @@ export default {
       this.$router.push("/");
     },
     loginChk() {
-      const token = this.accessToken;
+      const token = this.$store.state.accessToken;
       this.isAuthenticated = token === (undefined || null) ? false : true;
       if (this.isAuthenticated) {
         axios.defaults.headers.common["Authorization"] = `${this.accessToken}`;
@@ -126,9 +126,8 @@ export default {
     console.log(`로그인 여부: ${this.isAuthenticated}`);
   },
   updated() {
-    const token = this.accessToken;
-    this.isAuthenticated = token === (undefined || null) ? false : true;
-    if (!this.isAuthenticated) this.logout();
+    const token = this.$store.state.accessToken;
+    this.isAuthenticated = token === undefined ? false : true;
   },
   computed: {
     ...mapState(["userId", "nickName", "accessToken"]),

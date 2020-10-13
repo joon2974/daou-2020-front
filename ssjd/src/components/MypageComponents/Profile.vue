@@ -209,11 +209,7 @@ export default {
   },
   methods: {
     getUserPostsCount() {
-      const csrfToken = generateCsrfToken().replace(/=/gi, "");
-      this.$cookies.set("CSRF_TOKEN", csrfToken);
-
-      axios.defaults.headers.common["CSRF_TOKEN"] = csrfToken;
-      axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = this.$cookies.get("CSRF_TOKEN");
+      this.setCsrfToken();
 
       axios
         .get(
@@ -227,9 +223,7 @@ export default {
           console.log(`api 에러 profile: ${e}`);
         });
 
-      delete axios.defaults.headers.common["CSRF_TOKEN"];
-      delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
-      this.$cookies.remove("CSRF_TOKEN");
+      this.removeCsrfToken();
     },
     setS3Varialbes() {
       this.albumBucketName = s3Config.albumBucketName;
@@ -267,6 +261,7 @@ export default {
         "Authorization"
       ] = `${this.$store.state.accessToken}`;
       console.log(`닉네임: ${nickname}, 새로운 닉네임: ${newNickname}`);
+      this.setCsrfToken();
       this.$store
         .dispatch("UPDATEUSER", { nickname, newNickname })
         .then(() => {
@@ -276,12 +271,13 @@ export default {
           alert("닉네임 변경이 완료되었습니다!");
         })
         .catch((e) => {
-          if (e.response.request.status === 500) {
+          if (e.response.request.status === 400) {
             alert("중복된 아이디 입니다!");
             this.newNickname = "";
             this.$refs.newNickname.focus();
           }
         });
+        this.removeCsrfToken();
     },
     changePassword() {
       const nickname = this.title;
@@ -298,11 +294,8 @@ export default {
         .pbkdf2Sync(this.password, salt, 1038, 64, "sha512")
         .toString("base64")
         .replace(/=/gi, "");
-      const csrfToken = generateCsrfToken().replace(/=/gi, "");
-      this.$cookies.set("CSRF_TOKEN", csrfToken);
-
-      axios.defaults.headers.common["CSRF_TOKEN"] = csrfToken;
-      axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = this.$cookies.get("CSRF_TOKEN");
+      
+      this.setCsrfToken();
 
       axios
         .put(
@@ -321,12 +314,10 @@ export default {
           console.log(e);
         });
 
-      delete axios.defaults.headers.common["CSRF_TOKEN"];
-      delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
-      this.$cookies.remove("CSRF_TOKEN");
+      this.removeCsrfToken();
     },
     upload() {
-      let photoKey = this.userId;
+      let photoKey = String(this.userId);
 
       this.s3.upload(
         {
@@ -346,6 +337,7 @@ export default {
           alert("Successfully uploaded photo");
           console.log(data);
           console.log("파일 업로드 완료");
+          window.location.reload();
         }
       );
       this.dialog = false;
@@ -355,7 +347,7 @@ export default {
         "getObject",
         {
           Bucket: this.albumBucketName,
-          Key: this.userId + ".jpg"
+          Key: String(this.userId)
         },
         (err, url) => {
           if (err) {
@@ -365,20 +357,20 @@ export default {
         }
       )
     },
-    deleteImage() {
-      this.s3.deleteObject({
-        Bucket: this.albumBucketName,
-        Key: this.userId + ".jpg"
-      },
-      (err, data) => {
-        if (err) {
-          alert(`Error: ${err}`);
-        }
-        console.log(data);
-      })
-    },
     replaceSrc() {
       this.imageLoadFail = true;
+    },
+    setCsrfToken() {
+      const csrfToken = generateCsrfToken().replace(/=/gi, "");
+      this.$cookies.set("CSRF_TOKEN", csrfToken);
+
+      axios.defaults.headers.common["CSRF_TOKEN"] = csrfToken;
+      axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = this.$cookies.get("CSRF_TOKEN");
+    },
+    removeCsrfToken() {
+      delete axios.defaults.headers.common["CSRF_TOKEN"];
+      delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
+      this.$cookies.remove("CSRF_TOKEN");
     }
   },
 };

@@ -116,11 +116,7 @@ export default {
         return;
       }
 
-      const csrfToken = generateCsrfToken().replace(/=/gi, "");
-      this.$cookies.set("CSRF_TOKEN", csrfToken);
-
-      axios.defaults.headers.common["CSRF_TOKEN"] = csrfToken;
-      axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = this.$cookies.get("CSRF_TOKEN");
+      this.setCsrfToken();
 
       axios
         .post(
@@ -137,10 +133,20 @@ export default {
           console.log(e);
         });
 
+      this.removeCsrfToken();
+    },
+    setCsrfToken() {
+      const csrfToken = generateCsrfToken().replace(/=/gi, "");
+      this.$cookies.set("CSRF_TOKEN", csrfToken);
+
+      axios.defaults.headers.common["CSRF_TOKEN"] = csrfToken;
+      axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = this.$cookies.get("CSRF_TOKEN");
+    },
+    removeCsrfToken() {
       delete axios.defaults.headers.common["CSRF_TOKEN"];
       delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
       this.$cookies.remove("CSRF_TOKEN");
-    },
+    }
   },
 };
 </script>

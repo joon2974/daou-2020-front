@@ -15,6 +15,7 @@
               centered-input
               v-on:keypup="onkeyup"
               v-on:submit.prevent="onSearch"
+              autocomplete="off"
             >
             </v-text-field>
             <v-btn
@@ -22,7 +23,7 @@
               center
               color="blue white--text"
               v-show="keyword.length"
-              v-on:click="onReset"
+              v-on:click="search(keyword)"
               type="reset"
               class="btn-reset"
               >검색</v-btn
@@ -110,9 +111,13 @@
 <script>
 import axios from "axios";
 import Card from "../components/Card";
-import { httpInfos } from "../../secretStrings";
-import { generateCsrfToken } from "../../secretStrings";
 import InfiniteLoading from "vue-infinite-loading";
+
+const headers = {
+  "Content-type": "application/json; charset=UTF-8",
+  Accept: "*/*",
+  "Access-Control-Allow-Origin": "*",
+};
 
 export default {
   data() {
@@ -156,59 +161,23 @@ export default {
         this.$router.push("/signin");
       });
 
-      delete axios.defaults.headers.common["CSRF_TOKEN"];
-      delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
-      this.$cookies.remove("CSRF_TOKEN");
   },
   methods: {
     infiniteHandler($state) {
       const EACH_LEN = 6;
       let language = this.language;
       let site = this.site;
+      let keyword = this.keyword;
       console.log(language);
       console.log(site);
-      if (language == "" && site == "") {
-        console.log("기본으로 실행");
-        fetch("http://localhost:3000/api/posts?pageNum=" + this.limit, {
-          method: "get",
-        })
-          .then((resp) => {
-            return resp.json();
+      if (keyword.length !== 0) {
+        console.log("keyword 입력 ");
+      } else {
+        if (language == "" && site == "") {
+          console.log("기본으로 실행");
+          fetch("http://localhost:3000/api/posts?pageNum=" + this.limit, {
+            method: "get",
           })
-          .then((data) => {
-            setTimeout(() => {
-              if (data.length) {
-                this.posts = this.posts.concat(data);
-                $state.loaded();
-                this.limit += 1;
-
-                if (data.length / EACH_LEN < 1) {
-                  $state.complete();
-                }
-              } else {
-                $state.complete();
-              }
-            }, 500);
-          })
-          .catch((err) => {
-            console.error(err);
-          });
-      } else if (language != "") {
-        console.log("language it not NULL");
-        if (site != "") {
-          // 통합 실행
-          console.log("통합 실행");
-          fetch(
-            `http://localhost:3000/api/posts/problem/language?language=` +
-              this.language +
-              `&pageNum=` +
-              this.limit +
-              `&problemSite=` +
-              this.site,
-            {
-              method: "get",
-            }
-          )
             .then((resp) => {
               return resp.json();
             })
@@ -219,7 +188,7 @@ export default {
                   $state.loaded();
                   this.limit += 1;
 
-                  if (data.length > 0) {
+                  if (data.length / EACH_LEN < 1) {
                     $state.complete();
                   }
                 } else {
@@ -230,12 +199,83 @@ export default {
             .catch((err) => {
               console.error(err);
             });
+        } else if (language != "") {
+          console.log("language it not NULL");
+          if (site != "") {
+            // 통합 실행
+            console.log("통합 실행");
+            fetch(
+              `http://localhost:3000/api/posts/problem/language?language=` +
+                this.language +
+                `&pageNum=` +
+                this.limit +
+                `&problemSite=` +
+                this.site,
+              {
+                method: "get",
+              }
+            )
+              .then((resp) => {
+                return resp.json();
+              })
+              .then((data) => {
+                setTimeout(() => {
+                  if (data.length) {
+                    this.posts = this.posts.concat(data);
+                    $state.loaded();
+                    this.limit += 1;
+
+                    if (data.length > 0) {
+                      $state.complete();
+                    }
+                  } else {
+                    $state.complete();
+                  }
+                }, 500);
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          } else {
+            // language 실행
+            console.log(`language로 실행!`);
+            fetch(
+              `http://localhost:3000/api/posts/language/` +
+                this.language +
+                `?pageNum=` +
+                this.limit,
+              {
+                method: "get",
+              }
+            )
+              .then((resp) => {
+                return resp.json();
+              })
+              .then((data) => {
+                setTimeout(() => {
+                  if (data.length) {
+                    this.posts = this.posts.concat(data);
+                    $state.loaded();
+                    this.limit += 1;
+
+                    if (data.length > 0) {
+                      $state.complete();
+                    }
+                  } else {
+                    $state.complete();
+                  }
+                }, 500);
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          }
         } else {
-          // language 실행
-          console.log(`language로 실행!`);
+          // problem
+          console.log("problem 으로 실행");
           fetch(
-            `http://localhost:3000/api/posts/language/` +
-              this.language +
+            `http://localhost:3000/api/posts/problem/` +
+              this.site +
               `?pageNum=` +
               this.limit,
             {
@@ -252,7 +292,7 @@ export default {
                   $state.loaded();
                   this.limit += 1;
 
-                  if (data.length > 0) {
+                  if (data.length / EACH_LEN < 1) {
                     $state.complete();
                   }
                 } else {
@@ -264,39 +304,6 @@ export default {
               console.error(err);
             });
         }
-      } else {
-        // problem
-        console.log("problem 으로 실행");
-        fetch(
-          `http://localhost:3000/api/posts/problem/` +
-            this.site +
-            `?pageNum=` +
-            this.limit,
-          {
-            method: "get",
-          }
-        )
-          .then((resp) => {
-            return resp.json();
-          })
-          .then((data) => {
-            setTimeout(() => {
-              if (data.length) {
-                this.posts = this.posts.concat(data);
-                $state.loaded();
-                this.limit += 1;
-
-                if (data.length / EACH_LEN < 1) {
-                  $state.complete();
-                }
-              } else {
-                $state.complete();
-              }
-            }, 500);
-          })
-          .catch((err) => {
-            console.error(err);
-          });
       }
     },
     // onSearch(e) {},
@@ -357,6 +364,19 @@ export default {
         .then((data) => {
           this.posts = [...data.data];
         });
+    },
+    search(keyword) {
+      console.log(keyword + "검색");
+      if (this.site.length === 0 && this.language.length === 0) {
+        axios
+          .get(
+            `http://localhost:3000/api/posts/search/` + keyword + `?pageNum=0`,
+            headers
+          )
+          .then((data) => {
+            this.posts = [...data.data];
+          });
+      }
     },
   },
 };

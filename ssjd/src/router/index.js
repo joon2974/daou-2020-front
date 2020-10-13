@@ -26,6 +26,7 @@ const requiresAuth = () => (from, to, next) => {
       store.state.userId = "";
       store.state.nickName = "";
       console.log(e);
+      alert("토큰이 만료되었습니다. 재로그인 해주세요!");
     }
   }
   next(`/signin?returnPath=${from.path.replace("/", "")}`);
@@ -38,6 +39,7 @@ const routerOptions = [
   { path: "/mypage", component: "MyPageView", beforeEnter: requiresAuth() },
   { path: "/chat/:postId", component: "BoardDetailView" },
   { path: "/test", component: "TestView" },
+  { path: "/info", component: "CSRFView"},
   { path: "*", component: "NotFound" },
 ];
 

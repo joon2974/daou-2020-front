@@ -40,6 +40,7 @@
 import crypto from "crypto";
 import axios from "axios";
 import { httpInfos } from "../../../secretStrings";
+import { generateCsrfToken } from "../../../secretStrings";
 
 // 한글 입력 검사를 위함
 const korean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
@@ -76,15 +77,7 @@ export default {
   methods: {
     signUp() {
       const nickname = this.id;
-      const salt = nickname.concat(
-        nickname.slice(2, nickname.length - 2),
-        nickname
-          .split("")
-          .reverse()
-          .join("")
-          .slice(0, nickname.length - 1),
-        nickname.slice(3, nickname.length - 3)
-      );
+      const salt = generateCsrfToken().replace(/=/gi, "");
       const password = crypto
         .pbkdf2Sync(this.password, salt, 1038, 64, "sha512")
         .toString("base64")
@@ -111,10 +104,12 @@ export default {
         return;
       }
 
+      console.log("회원가입 솔트: " + salt);
+
       axios
         .post(
           `${httpInfos.resourceHost}/users`,
-          { nickname, password },
+          { nickname, password, salt },
           httpInfos.headers
         )
         .then(() => {

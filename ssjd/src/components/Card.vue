@@ -1,6 +1,6 @@
 <template>
   <v-col cols="6">
-    <v-card class="ma-10" max-width="550px">
+    <v-card class="ma-10" max-width="700px">
       <v-row justify="center">
         <v-img
           @click="InPost()"

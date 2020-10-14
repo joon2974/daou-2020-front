@@ -106,7 +106,7 @@
                   ref="form"
                   v-model="valid"
                   lazy-validation
-                  @submit.prevent="changePassword"
+                  @submit.prevent="changePasswordClicked"
                 >
                   <v-text-field
                     autofocus
@@ -179,6 +179,7 @@ export default {
       dialog: false,
       profileImgSrc: "",
       newNickname: "",
+      userSalt: "",
       nicknameDialog: false,
       passwordDialog: false,
       file: null,
@@ -279,22 +280,24 @@ export default {
         });
         this.removeCsrfToken();
     },
+    changePasswordClicked() {
+      const nickname = this.title;
+
+      axios.get(`${httpInfos.resourceHost}/users/salt/${nickname}`, httpInfos.headers)
+        .then((res) => {
+          this.userSalt = res.data.userSalt;
+          this.changePassword();
+        })
+        .catch((e) => console.log(`Salt get Error: ${e}`));
+    },
     changePassword() {
       const nickname = this.title;
-      const salt = nickname.concat(
-        nickname.slice(2, nickname.length - 2),
-        nickname
-          .split("")
-          .reverse()
-          .join("")
-          .slice(0, nickname.length - 1),
-        nickname.slice(3, nickname.length - 3)
-      );
+      const salt = String(this.userSalt);
       const password = crypto
         .pbkdf2Sync(this.password, salt, 1038, 64, "sha512")
         .toString("base64")
         .replace(/=/gi, "");
-      
+
       this.setCsrfToken();
 
       axios

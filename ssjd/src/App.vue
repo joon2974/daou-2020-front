@@ -30,7 +30,7 @@
       <v-btn depressed="depressed" @click="goToHome">
         <v-toolbar-title>
           <v-row>
-            <v-col cols="6"><v-img src="./assets/daou_logo.png"/></v-col>
+            <v-col cols="6"><v-img src="./assets/daou_logo.png" /></v-col>
             <v-col cols="6" class="my-4 font-weight-bold"
               ><span v-text="title"
             /></v-col>
@@ -42,7 +42,7 @@
         <v-icon>mdi-logout</v-icon>
       </v-btn>
       <v-btn icon v-else @click="login">
-        <span>로그인</span>
+        <v-icon>mdi-login</v-icon>
       </v-btn>
     </v-app-bar>
 
@@ -63,8 +63,6 @@
 <script>
 import { mapState } from "vuex";
 import axios from "axios";
-// import jwt from "jsonwebtoken";
-// import { jwtSalt } from "../secretStrings";
 
 export default {
   data() {
@@ -76,8 +74,8 @@ export default {
       depressed: true,
       items: [
         {
-          icon: "mdi-clipboard-text-outline",
-          title: "나의 풀이",
+          icon: "mdi-account",
+          title: "마이 페이지",
           to: "/mypage",
         },
         {
@@ -87,19 +85,14 @@ export default {
         },
         {
           icon: "mdi-briefcase-outline",
-          title: "백준",
-          to: "/BJ",
-        },
-        {
-          icon: "mdi-chat",
-          title: "프로그래머스",
-          to: "/board",
+          title: "글쓰기",
+          to: "/create",
         },
       ],
       miniVariant: false,
       right: true,
       rightDrawer: false,
-      title: "SSJD",
+      title: "ALDU",
     };
   },
   methods: {
@@ -110,19 +103,13 @@ export default {
       this.$router.push("/");
     },
     loginChk() {
-      const token = this.accessToken;
-      // jwt 복호화 참고
-      // console.log(`솔트: ${jwtSalt.salt}`);
-      // try {
-      //   const decoded = jwt.verify(token, jwtSalt.salt);
-      //   console.log(decoded);
-      // } catch (e) {
-      //   console.log(e);
-      // }
-      this.isAuthenticated = token === undefined ? false : true;
+      const token = this.$store.state.accessToken;
+      this.isAuthenticated = token === (undefined || null) ? false : true;
       if (this.isAuthenticated) {
         axios.defaults.headers.common["Authorization"] = `${this.accessToken}`;
-      } else this.$router.push("/signin");
+      } else {
+        this.$router.push("/signin");
+      }
     },
     logout() {
       this.$store.dispatch("LOGOUT").then(() => {
@@ -139,7 +126,7 @@ export default {
     console.log(`로그인 여부: ${this.isAuthenticated}`);
   },
   updated() {
-    const token = this.accessToken;
+    const token = this.$store.state.accessToken;
     this.isAuthenticated = token === undefined ? false : true;
   },
   computed: {

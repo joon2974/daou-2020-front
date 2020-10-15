@@ -10,7 +10,7 @@ Vue.use(VueRouter);
 const requiresAuth = () => (from, to, next) => {
   const token = store.state.accessToken;
   const isAuthenticated = token === undefined ? false : true;
-  // 로컬 스토리지에서 토큰 받아와서 있으면 next() 실행하도록 수정하기
+  // 여기서 expired 됐으면 vuex에 있는 것들 다 지우기
   if (isAuthenticated) {
     try {
       const decoded = jwt.verify(token, jwtSalt.salt);
@@ -22,18 +22,24 @@ const requiresAuth = () => (from, to, next) => {
       )
         return next();
     } catch (e) {
+      store.state.accessToken = null;
+      store.state.userId = "";
+      store.state.nickName = "";
       console.log(e);
+      alert("토큰이 만료되었습니다. 재로그인 해주세요!");
     }
   }
-  next("/signin?returnPath=mypage");
+  next(`/signin?returnPath=${from.path.replace("/", "")}`);
 };
 
 const routerOptions = [
   { path: "/", component: "BoardView" },
   { path: "/signin", component: "SignInView" },
-  { path: "/board", component: "HomeView" },
-  { path: "/BJ", component: "BJView" },
+  { path: "/create", component: "CreatePostView", beforeEnter: requiresAuth() },
   { path: "/mypage", component: "MyPageView", beforeEnter: requiresAuth() },
+  { path: "/chat/:postId", component: "BoardDetailView" },
+  { path: "/test", component: "TestView" },
+  { path: "/info", component: "CSRFView"},
   { path: "*", component: "NotFound" },
 ];
 

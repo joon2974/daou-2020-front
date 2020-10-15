@@ -4,7 +4,8 @@
       <div class="d-flex flex-row">
         <div class="d-flex flex-column">
           <v-avatar class="ma-3" size="150" tile>
-            <v-img src="../../assets/profile.png"></v-img>
+            <v-img :src="profileImgSrc" @error="replaceSrc" v-if="!imageLoadFail"></v-img>
+            <v-img src="../../assets/profile.png" v-else></v-img>
           </v-avatar>
           <v-card-actions>
             <v-dialog v-model="dialog" persistent max-width="290">
@@ -105,7 +106,7 @@
                   ref="form"
                   v-model="valid"
                   lazy-validation
-                  @submit.prevent="changePassword"
+                  @submit.prevent="changePasswordClicked"
                 >
                   <v-text-field
                     autofocus
@@ -158,11 +159,13 @@ import crypto from "crypto";
 import { mapState } from "vuex";
 import { s3Config } from "../../../secretStrings";
 import { httpInfos } from "../../../secretStrings";
+import { generateCsrfToken } from "../../../secretStrings";
 
 export default {
   created() {
     this.setS3Varialbes();
     this.getUserPostsCount();
+    this.getImage();
   },
   data() {
     return {
@@ -174,7 +177,9 @@ export default {
         "Access-Control-Allow-Origin": "*",
       },
       dialog: false,
+      profileImgSrc: "",
       newNickname: "",
+      userSalt: "",
       nicknameDialog: false,
       passwordDialog: false,
       file: null,
@@ -185,6 +190,7 @@ export default {
       albumBucketName: "",
       bucketRegion: "",
       IdentityPoolId: "",
+      imageLoadFail: false,
       s3: null,
       pwdVrfRules: [
         () =>
@@ -200,11 +206,13 @@ export default {
     };
   },
   computed: {
-    ...mapState(["userId"]),
+    ...mapState(["userId", "accessToken"]),
   },
   methods: {
     getUserPostsCount() {
-      return axios
+      this.setCsrfToken();
+
+      axios
         .get(
           `${httpInfos.resourceHost}/posts/number/${this.userId}`,
           httpInfos.headers
@@ -213,8 +221,10 @@ export default {
           this.subtitle = `내가 푼 문제 갯수: ${data.data}문제`;
         })
         .catch((e) => {
-          console.log(`api 에러: ${e}`);
+          console.log(`api 에러 profile: ${e}`);
         });
+
+      this.removeCsrfToken();
     },
     setS3Varialbes() {
       this.albumBucketName = s3Config.albumBucketName;
@@ -237,7 +247,13 @@ export default {
     },
     changeProfile(file) {
       this.file = file;
-      console.log(this.file);
+      const parsedName = file.name.split(".");
+      if (parsedName[parsedName.length - 1] !== "jpg") {
+        alert("jpg 파일만 업로드 해주세요!");
+        this.file = null;
+        this.dialog = false;
+        window.location.reload();
+      }
     },
     changeNickname() {
       const nickname = this.$store.state.nickName;
@@ -246,6 +262,7 @@ export default {
         "Authorization"
       ] = `${this.$store.state.accessToken}`;
       console.log(`닉네임: ${nickname}, 새로운 닉네임: ${newNickname}`);
+      this.setCsrfToken();
       this.$store
         .dispatch("UPDATEUSER", { nickname, newNickname })
         .then(() => {
@@ -255,28 +272,33 @@ export default {
           alert("닉네임 변경이 완료되었습니다!");
         })
         .catch((e) => {
-          if (e.response.request.status === 500) {
+          if (e.response.request.status === 400) {
             alert("중복된 아이디 입니다!");
             this.newNickname = "";
             this.$refs.newNickname.focus();
           }
         });
+        this.removeCsrfToken();
+    },
+    changePasswordClicked() {
+      const nickname = this.title;
+
+      axios.get(`${httpInfos.resourceHost}/users/salt/${nickname}`, httpInfos.headers)
+        .then((res) => {
+          this.userSalt = res.data.userSalt;
+          this.changePassword();
+        })
+        .catch((e) => console.log(`Salt get Error: ${e}`));
     },
     changePassword() {
       const nickname = this.title;
-      const salt = nickname.concat(
-        nickname.slice(2, nickname.length - 2),
-        nickname
-          .split("")
-          .reverse()
-          .join("")
-          .slice(0, nickname.length - 1),
-        nickname.slice(3, nickname.length - 3)
-      );
+      const salt = String(this.userSalt);
       const password = crypto
         .pbkdf2Sync(this.password, salt, 1038, 64, "sha512")
         .toString("base64")
         .replace(/=/gi, "");
+
+      this.setCsrfToken();
 
       axios
         .put(
@@ -294,9 +316,11 @@ export default {
           alert("비밀번호 변경을 실패했습니다.");
           console.log(e);
         });
+
+      this.removeCsrfToken();
     },
     upload() {
-      let photoKey = this.title;
+      let photoKey = String(this.userId);
 
       this.s3.upload(
         {
@@ -316,10 +340,41 @@ export default {
           alert("Successfully uploaded photo");
           console.log(data);
           console.log("파일 업로드 완료");
+          window.location.reload();
         }
       );
       this.dialog = false;
     },
+    getImage() {
+      this.s3.getSignedUrl(
+        "getObject",
+        {
+          Bucket: this.albumBucketName,
+          Key: String(this.userId)
+        },
+        (err, url) => {
+          if (err) {
+            console.log(`에러: ${err}`);
+          }
+          this.profileImgSrc = url;
+        }
+      )
+    },
+    replaceSrc() {
+      this.imageLoadFail = true;
+    },
+    setCsrfToken() {
+      const csrfToken = generateCsrfToken().replace(/=/gi, "");
+      this.$cookies.set("CSRF_TOKEN", csrfToken);
+
+      axios.defaults.headers.common["CSRF_TOKEN"] = csrfToken;
+      axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = this.$cookies.get("CSRF_TOKEN");
+    },
+    removeCsrfToken() {
+      delete axios.defaults.headers.common["CSRF_TOKEN"];
+      delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
+      this.$cookies.remove("CSRF_TOKEN");
+    }
   },
 };
 </script>

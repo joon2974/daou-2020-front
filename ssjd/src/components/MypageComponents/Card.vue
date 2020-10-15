@@ -29,8 +29,7 @@ export default {
   props: ["post", "imageSrc"],
   methods: {
     inThePosts() {
-      console.log(this.post);
-      window.open("http://localhost:3000/posts/" + this.post.postId, "_blank");
+      window.open(`${this.post.problem.problemLink}`);
     },
   },
 };

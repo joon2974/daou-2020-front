@@ -43,6 +43,9 @@ import { httpInfos } from "../../../secretStrings";
 
 // 한글 입력 검사를 위함
 const korean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+const space = /\s/g;
+const special = /[~!@#$%^&*()_+|<>?:{}]/gi;
+
 
 export default {
   data() {
@@ -89,6 +92,20 @@ export default {
 
       if (korean.test(nickname)) {
         alert("아이디는 영문, 숫자만 가능합니다!");
+        this.id = "";
+        this.$refs.idInput.focus();
+        return;
+      }
+
+      if (space.test(nickname)) {
+        alert("아이디는 공백을 포함할 수 없습니다!");
+        this.id = "";
+        this.$refs.idInput.focus();
+        return;
+      }
+
+      if (special.test(nickname)) {
+        alert("아이디는 특수문자를 포함할 수 없습니다!");
         this.id = "";
         this.$refs.idInput.focus();
         return;

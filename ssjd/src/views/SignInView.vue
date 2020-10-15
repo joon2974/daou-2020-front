@@ -1,9 +1,9 @@
 <template>
   <v-row>
     <v-col cols="2"> </v-col>
-    <v-col cols="8">
-      <v-card>
-        <v-row class="px-1">
+    <v-col cols="8" class="mt-16">
+      <v-card class="mt-16">
+        <v-row class="px-1 mt-16">
           <v-col cols="6">
             <v-img
               class="white--text align-end"

@@ -143,7 +143,7 @@ export default {
     return {
       connected: false, //소켓 연결 상태
 
-      loadSuccess: false,
+      loadSuccess: false, //게시글 불러오기 성공실패 여부
 
       postId: this.$route.params.postId, //게시글 번호
 

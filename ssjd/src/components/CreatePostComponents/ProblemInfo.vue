@@ -89,8 +89,17 @@ export default {
       problemInfo.problemLink = this.problemLink;
       problemInfo.problemSite = this.selectedPlatform;
 
+      if (!this.checkDetailUrl(this.problemLink)) {
+        alert("올바른 URL 형식을 입력해 주세요!");
+        return ;
+      }
+
       this.$emit("problemInfoEmit", problemInfo);
     },
+    checkDetailUrl(strUrl) {
+      const expUrl = /^(https?|chrome):\/\/[^\s$.?#].[^\s]*$/gm;
+      return expUrl.test(strUrl);
+    }
   },
 };
 </script>

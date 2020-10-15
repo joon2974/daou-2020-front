@@ -30,12 +30,16 @@
 
 <script>
 import crypto from "crypto";
+import axios from "axios";
+import { generateCsrfToken } from "../../../secretStrings";
+import { httpInfos } from "../../../secretStrings";
 
 export default {
   data() {
     return {
       id: "",
       password: "",
+      userSalt: "",
       idRules: [
         (v) => !!v || "ID is required",
         (v) =>
@@ -54,25 +58,30 @@ export default {
   methods: {
     logIn() {
       const nickname = this.id;
-      const salt = nickname.concat(
-        nickname.slice(2, nickname.length - 2),
-        nickname
-          .split("")
-          .reverse()
-          .join("")
-          .slice(0, nickname.length - 1),
-        nickname.slice(3, nickname.length - 3)
-      );
+
+      axios.get(`${httpInfos.resourceHost}/users/salt/${nickname}`, httpInfos.headers)
+        .then((res) => {
+          this.userSalt = res.data.userSalt;
+          this.requestLogin();
+        })
+        .catch((e) => console.log(`Salt get Error: ${e}`));
+    },
+    requestLogin() {
+      const nickname = this.id;
+      const salt = String(this.userSalt);
       const password = crypto
         .pbkdf2Sync(this.password, salt, 1038, 64, "sha512")
         .toString("base64")
         .replace(/=/gi, "");
+
+      this.setCsrfToken();
       this.$store
         .dispatch("LOGIN", { nickname, password })
         .then(() => this.redirect())
         .catch(() => {
           alert("아이디 혹은 비밀번호가 일치하지 않습니다!");
         });
+      this.removeCsrfToken();
     },
     redirect() {
       const { search } = window.location;
@@ -92,6 +101,18 @@ export default {
       if (returnPath === undefined) this.$router.push("/");
       else this.$router.push(returnPath);
     },
+    setCsrfToken() {
+      const csrfToken = generateCsrfToken().replace(/=/gi, "");
+      this.$cookies.set("CSRF_TOKEN", csrfToken);
+
+      axios.defaults.headers.common["CSRF_TOKEN"] = csrfToken;
+      axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"] = this.$cookies.get("CSRF_TOKEN");
+    },
+    removeCsrfToken() {
+      delete axios.defaults.headers.common["CSRF_TOKEN"];
+      delete axios.defaults.headers.common["CSRF_TOKEN_IN_COOKIE"];
+      this.$cookies.remove("CSRF_TOKEN");
+    }
   },
 };
 </script>

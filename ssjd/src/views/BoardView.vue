@@ -111,6 +111,7 @@
 <script>
 import axios from "axios";
 import Card from "../components/Card";
+import { httpInfos } from "../../secretStrings";
 import InfiniteLoading from "vue-infinite-loading";
 
 const headers = {
@@ -139,7 +140,7 @@ export default {
       item: 0,
       ex7: "primary",
       ex8: "red",
-      api: [`http://localhost:3000/api/posts?pageNum=0`],
+      api: [`${httpInfos.resourceHost}/posts?pageNum=0`],
     };
   },
   name: "Topic",
@@ -150,7 +151,7 @@ export default {
   created() {
     this.srcs = this.$store.state.cardImages;
     axios
-      .get(`http://localhost:3000/api/posts?pageNum=0`, headers)
+      .get(`${httpInfos.resourceHost}/posts?pageNum=0`, headers)
       .then((data) => {
         console.log(data);
         this.posts = [...data.data];
@@ -176,7 +177,7 @@ export default {
       console.log("keyword" + keyword);
       if (language.length === 0 && site.length === 0) {
         console.log("기본 Paging 실행");
-        fetch("http://localhost:3000/api/posts?pageNum=" + this.limit, {
+        fetch(httpInfos.resourceHost + "/posts?pageNum=" + this.limit, {
           method: "get",
         })
           .then((resp) => {
@@ -206,7 +207,7 @@ export default {
           // 통합 실행
           console.log("통합 실행");
           fetch(
-            `http://localhost:3000/api/posts/problem/language?language=` +
+            `${httpInfos.resourceHost}/posts/problem/language?language=` +
               this.language +
               `&pageNum=` +
               this.limit +
@@ -243,7 +244,7 @@ export default {
             // 통합 실행
             console.log("통합 실행");
             fetch(
-              `http://localhost:3000/api/posts/problem/language?language=` +
+              `${httpInfos.resourceHost}/posts/problem/language?language=` +
                 this.language +
                 `&pageNum=` +
                 this.limit +
@@ -278,7 +279,7 @@ export default {
             // language 실행
             console.log(`language로 실행!`);
             fetch(
-              `http://localhost:3000/api/posts/language/` +
+              `${httpInfos.resourceHost}/posts/language/` +
                 this.language +
                 `?pageNum=` +
                 this.limit,
@@ -312,7 +313,7 @@ export default {
           // problem
           console.log("problem 으로 실행");
           fetch(
-            `http://localhost:3000/api/posts/problem/` +
+            `${httpInfos.resourceHost}/posts/problem/` +
               this.site +
               `?pageNum=` +
               this.limit,
@@ -362,7 +363,7 @@ export default {
       if (this.language.length === 0) {
         axios
           .get(
-            `http://localhost:3000/api/posts/problem/` + value + `?pageNum=0`,
+            `${httpInfos.resourceHost}/posts/problem/` + value + `?pageNum=0`,
             headers
           )
           .then((data) => {
@@ -379,7 +380,7 @@ export default {
       if (this.site.length === 0) {
         axios
           .get(
-            `http://localhost:3000/api/posts/language/` + value + `?pageNum=0`,
+            `${httpInfos.resourceHost}/posts/language/` + value + `?pageNum=0`,
             headers
           )
           .then((data) => {
@@ -394,7 +395,7 @@ export default {
       this.posts = [];
       axios
         .get(
-          `http://localhost:3000/api/posts/problem/language?language=` +
+          `${httpInfos.resourceHost}/posts/problem/language?language=` +
             language +
             `&pageNum=0&problemSite=` +
             site,
@@ -411,7 +412,7 @@ export default {
       console.log("lang :: " + this.language);
       axios
         .get(
-          `http://localhost:3000/api/posts/search/` + keyword + `?pageNum=0`,
+          `${httpInfos.resourceHost}/posts/search/` + keyword + `?pageNum=0`,
           headers
         )
         .then((data) => {
